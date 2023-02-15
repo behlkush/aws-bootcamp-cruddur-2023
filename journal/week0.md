@@ -7,6 +7,15 @@
 SNS Topic Creation
 
 aws sns subscribe \
-    --topic-arn=arn:aws:sns:ca-central-1:342196396576:billing-alarm \
+    --topic-arn=arn:aws:sns:ca-central-1:MYACCOUNTID:billing-alarm \
     --protocol=email \
-    --notification-endpoint=kushbehl@gmail.com
+    --notification-endpoint=myEMAIL@gmail.com
+    
+    
+CloudWatch alarm:
+
+Created using:
+aws cloudwatch put-metric-alarm --cli-input-json file://aws/json/alarm_config.json
+
+alarm_config.json - checked in
+
