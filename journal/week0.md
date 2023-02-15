@@ -1,7 +1,10 @@
 # Week 0 — Billing and Architecture
 
+## gitpod.yml Update
 
-Update our .gitpod.yml - Also ran the installation steps from CLI and installed Aws cli manually
+Updated our .gitpod.yml - Also ran the installation steps from CLI and installed Aws cli manually
+
+`code`
 tasks: 
   - name: aws-cli
     env:
@@ -12,7 +15,7 @@ tasks:
       unzip awscliv2.zip
       sudo ./aws/install
       cd $THEIA_WORKSPACE_ROOT
-
+`code`
 
 ****Created new user and Generated AWS Credentials**
 Created a user for my account
