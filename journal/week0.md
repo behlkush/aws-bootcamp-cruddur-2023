@@ -77,6 +77,8 @@ aws budgets create-budget \
 
 Updated files checked in: budget.json and budget-notifications-with-subscribers.json
 
+**Proof of Budget Creation from AWS Console**
+![Budget from AWS Console](assets/budget_awsbootcamp.png)
 
 ## Most important notes from Chris and Andrew from Week 0 videos
 **Conceptual Design:**
