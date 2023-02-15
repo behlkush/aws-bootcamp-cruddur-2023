@@ -99,3 +99,5 @@ Updated files checked in: budget.json and budget-notifications-with-subscribers.
 ## Conceptual Design - Lucid Chart - Cruddur
 ![Conceptual Design by Kush Behl](assets/crudur_conceptual.png)
 
+## Adding Napkin Diagram too:
+
