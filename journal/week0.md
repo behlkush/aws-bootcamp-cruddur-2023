@@ -58,6 +58,9 @@ aws cloudwatch put-metric-alarm --cli-input-json file://aws/json/alarm_config.js
 
 alarm_config.json - checked in
 
+**Proof of Billing Alarm from AWS Console**
+![Cloudwatch Billing Alarm](assets/billing_alarm.png)
+
 
 ## AWS Budget - DONE
 ```
