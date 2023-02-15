@@ -4,7 +4,7 @@
 
 Updated our .gitpod.yml - Also ran the installation steps from CLI and installed Aws cli manually
 
-`code`
+```
 tasks: 
   - name: aws-cli
     env:
@@ -15,7 +15,7 @@ tasks:
       unzip awscliv2.zip
       sudo ./aws/install
       cd $THEIA_WORKSPACE_ROOT
-`code`
+```
 
 ****Created new user and Generated AWS Credentials**
 Created a user for my account
@@ -27,11 +27,13 @@ Chose AWS CLI Access
 Downloaded the CSV with the credentials
 
 EXPORTED the entries:
+```
 gp env AWS_ACCESS_KEY_ID="KEYID"
 gp env AWS_SECRET_ACCESS_KEY="SECRET KEY"
 gp env AWS_DEFAULT_REGION=canada-central-1
+```
 
-Enable Billing -- DONE
+## Enable Billing -- DONE
 We need to turn on Billing Alerts to recieve alerts...
 
 In your Root Account go to the Billing Page
@@ -39,27 +41,30 @@ Under Billing Preferences Choose Receive Billing Alerts
 Save Preferences
 
 
-SNS Topic Creation
-
+## SNS Topic Creation
+```
 aws sns subscribe \
     --topic-arn=arn:aws:sns:ca-central-1:MYACCOUNTID:billing-alarm \
     --protocol=email \
     --notification-endpoint=myEMAIL@gmail.com
+```
     
-    
-CloudWatch alarm:
+## CloudWatch alarm:
 
 Created using:
+```
 aws cloudwatch put-metric-alarm --cli-input-json file://aws/json/alarm_config.json
+```
 
 alarm_config.json - checked in
 
 
-AWS Budget - DONE
+## AWS Budget - DONE
+```
 aws budgets create-budget
-
+```
 Get your AWS Account ID
-
+```
 aws sts get-caller-identity --query Account --output text
 Supply your AWS Account ID
 Update the json files
@@ -68,6 +73,6 @@ aws budgets create-budget \
     --account-id AccountID \
     --budget file://aws/json/budget.json \
     --notifications-with-subscribers file://aws/json/budget-notifications-with-subscribers.json
-
+```
 
 Updated files checked in: budget.json and budget-notifications-with-subscribers.json
