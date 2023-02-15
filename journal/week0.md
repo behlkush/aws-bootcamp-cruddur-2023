@@ -17,7 +17,7 @@ tasks:
       cd $THEIA_WORKSPACE_ROOT
 ```
 
-****Created new user and Generated AWS Credentials**
+**Created new user and Generated AWS Credentials**
 Created a user for my account
 Enabled console access for the user
 Created a new Admin Group and applied AdministratorAccess
@@ -76,3 +76,26 @@ aws budgets create-budget \
 ```
 
 Updated files checked in: budget.json and budget-notifications-with-subscribers.json
+
+
+## Most important notes from Chris and Andrew from Week 0 videos
+**Conceptual Design:**
+	- I got this wonderful idea. Need to do the napkin design
+	- I like to start with the user.
+	- We want to create a twitter killer. From conceptual standpoint, what are the things that we want our user to be able to do.
+	- We know that we need a stateful backend
+	- Something in the middle -- to do the thing
+	- Then start defining the functionality
+	- So this is how we are going to explain our idea to the business person. So we do mention frontend and backend but no need to go into the implementation details
+	- Frontend -- to a website
+	- How does a business person realize this thing in terms of money.
+
+**Now is the time to go into dumb questions**
+	- Will every user have their own identity or anonymous
+	- So we need to store the stateful - i.e. tweets from the user as well as identity of the user
+	- Important dumb question
+		○ How will you prevent DDOS
+    
+## Conceptual Design - Lucid Chart - Cruddur
+![Conceptual Design by Kush Behl](assets/crudur_conceptual.png)
+
