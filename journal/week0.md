@@ -111,3 +111,9 @@ Updated files checked in: budget.json and budget-notifications-with-subscribers.
 [Here is a link to my Lucid Digram shown below](https://lucid.app/lucidchart/498e3faf-71f2-4b5a-8f5a-dd542ce8726a/edit?viewport_loc=116%2C-33%2C2219%2C967%2CIxwxtCHfjlC~&invitationId=inv_af526d85-a1d4-41ed-b1f3-ebf2482c8fdd)
 
 ![Lucid Chard - Logical Design](assets/logical_design.png)
+
+
+# Above and Beyond - Homework Challenges
+
+- I have removed the Root account credentials and added MFA to my IAM Role. 
+- [MFA Setup](assets/mfa_proof.png)
