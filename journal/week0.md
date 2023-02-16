@@ -105,4 +105,7 @@ Updated files checked in: budget.json and budget-notifications-with-subscribers.
 ![Conceptual Design by Kush Behl](assets/crudur_conceptual.png)
 
 ## Adding Napkin Diagram too:
+![Napkin Design by Kush Behl](assets/napkin_design.png)
+
+## Logical Diagram Coming up:
 
