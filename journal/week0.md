@@ -117,3 +117,8 @@ Updated files checked in: budget.json and budget-notifications-with-subscribers.
 
 - I have removed the Root account credentials and added MFA to my IAM Role. 
 - ![MFA Setup](assets/mfa_proof.png)
+
+
+## Quota increase
+- There are service limits to AWS services. I have requested a quota increase for EC2-VPC Elastic IPs from 5 to 10
+
