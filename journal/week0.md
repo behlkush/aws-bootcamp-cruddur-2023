@@ -121,4 +121,4 @@ Updated files checked in: budget.json and budget-notifications-with-subscribers.
 
 ## Quota increase
 - There are service limits to AWS services. I have requested a quota increase for EC2-VPC Elastic IPs from 5 to 10
-
+- ![Quota Increase](assets/quota_increase.png)
