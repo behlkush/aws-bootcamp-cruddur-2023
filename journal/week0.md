@@ -116,4 +116,4 @@ Updated files checked in: budget.json and budget-notifications-with-subscribers.
 # Above and Beyond - Homework Challenges
 
 - I have removed the Root account credentials and added MFA to my IAM Role. 
-- [MFA Setup](assets/mfa_proof.png)
+- ![MFA Setup](assets/mfa_proof.png)
