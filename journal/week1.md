@@ -177,10 +177,18 @@ volumes:
       sudo apt update
       sudo apt install -y postgresql-client-13 libpq-dev
   ```
-  
+
+#Issues faced
+
+1. Unable to connect to postgres using Postgres client
   
 I faced an issue here while installing the postgres extension in gitpod. I am getting connection timeout error while trying to connect to postgres after starting it up and adding it as a part of docker-compose.yml.
-It is working from the CLI.
+It is working from the CLI. I have verified that the port is opened from the lock sign
+![Port open](assets/postgres_port_open.png)
+
+After a bit of debugging i found out that i was selecting the MySQL tab which is the default selected tab in database explorer. once i selected correct tab the DB was connected. Below is the screenshot:
+![Finally it is working](assets/postgres_working_client.png)
+
   
-  
+
 
