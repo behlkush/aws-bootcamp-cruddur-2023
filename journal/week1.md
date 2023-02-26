@@ -178,7 +178,10 @@ volumes:
       sudo apt install -y postgresql-client-13 libpq-dev
   ```
 
-#Issues faced
+## Here is a working screenshot of notifications tab
+![Notifications page working!](assets/notifications.png)
+
+# Issues faced
 
 1. Unable to connect to postgres using Postgres client
   
@@ -188,6 +191,7 @@ It is working from the CLI. I have verified that the port is opened from the loc
 
 After a bit of debugging i found out that i was selecting the MySQL tab which is the default selected tab in database explorer. once i selected correct tab the DB was connected. Below is the screenshot:
 ![Finally it is working](assets/postgres_working_client.png)
+
 
   
 
