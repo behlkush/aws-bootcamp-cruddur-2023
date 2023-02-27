@@ -248,24 +248,6 @@ Here is the image on my docker hub account:
 
 ## Notifications page changes
 
-openapi.yml
-
-```
-/api/activities/notifications:
-    get:
-      description: 'Return a feed of activities for all thost that I follow'
-      tags:
-        - activities
-      parameters: []
-      responses:
-        '200':
-          description: Returns an array of activities
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Activity'
-```
-
-App.py updated to include a route / api request to notifications page
+1. Added notifications entry into openapi.yml
+2. app.py updated to include a route / api request to notifications page
+3. 
