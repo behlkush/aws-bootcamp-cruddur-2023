@@ -195,7 +195,54 @@ After a bit of debugging i found out that i was selecting the MySQL tab which is
 
   No other challenge was faced.
   
-  
+# Homework challenge
+
+### Push a new image to Docker Hub
+
+#### Issues faced during homework challenge
+1. Unable to find where is docker image stored -- Finally after research found that docker images are available with docker command and did docker image ls
+2. While trying to push the image I got an error: "denied: requested access to the resource is denied" - read mutliple articles and found that to be able to push to docker hub i need to tag the image properly first.
+
+Finally tagged the image using docker tag image_name MYDOCKERHUBUSERNAME/image_name and was able to push the image to docker hub
+
+
+
+```
+data % docker image ls
+REPOSITORY                                                  TAG           IMAGE ID       CREATED       SIZE
+aws-bootcamp-cruddur-2023-week-1-spurin-frontend-react-js   latest        b6ad666fe0cc   2 hours ago   1.19GB
+aws-bootcamp-cruddur-2023-week-1-spurin-backend-flask       latest        5bffe647b1c9   2 hours ago   130MB
+owensound_first_image                                       first_image   5bffe647b1c9   2 hours ago   130MB
+postgres                                                    13-alpine     55f14697b527   2 weeks ago   238MB
+amazon/dynamodb-local                                       latest        904626f640dc   3 weeks ago   499MB
+data % docker tag aws-bootcamp-cruddur-2023-week-1-spurin-backend-flask behlkush/aws-bootcamp-cruddur-2023-week-1-spurin-backend-flask 
+data % docker image ls
+REPOSITORY                                                       TAG           IMAGE ID       CREATED       SIZE
+aws-bootcamp-cruddur-2023-week-1-spurin-frontend-react-js        latest        b6ad666fe0cc   2 hours ago   1.19GB
+behlkush/aws-bootcamp-cruddur-2023-week-1-spurin-backend-flask   latest        5bffe647b1c9   2 hours ago   130MB
+aws-bootcamp-cruddur-2023-week-1-spurin-backend-flask            latest        5bffe647b1c9   2 hours ago   130MB
+owensound_first_image                                            first_image   5bffe647b1c9   2 hours ago   130MB
+postgres                                                         13-alpine     55f14697b527   2 weeks ago   238MB
+amazon/dynamodb-local                                            latest        904626f640dc   3 weeks ago   499MB
+data % docker push behlkush/aws-bootcamp-cruddur-2023-week-1-spurin-backend-flask
+Using default tag: latest
+The push refers to repository [docker.io/behlkush/aws-bootcamp-cruddur-2023-week-1-spurin-backend-flask]
+2ce63b6cdc08: Pushed 
+07773dd7871d: Pushed 
+54bc6ff7e5e7: Pushed 
+d9b5bdda2cb0: Pushed 
+4358fe544125: Pushed 
+53b2529dfca9: Pushed 
+5be8f6899d42: Pushed 
+8d60832b730a: Pushed 
+63b3cf45ece8: Pushed 
+latest: digest: sha256:39ac4e67f0a0544e7029ee698e452af222f86d00bbcd0991d489383c1dcc5142 size: 2203
+data % 
+```
+
+Here is the image on my docker hub account:
+![Docker hub image](assets/docker_hub_image.png)
+
 
 # Code changes
 
