@@ -248,6 +248,11 @@ Here is the image on my docker hub account:
 
 ## Notifications page changes
 
+### Backend
 1. Added notifications entry into openapi.yml
-2. app.py updated to include a route / api request to notifications page
-3. 
+2. app.py updated to include a route/api  to notifications page
+3. New service created with notifications_activities.py
+
+### Frontend
+1. App.js --> Updated to include Notification page
+2. NotificationFeedPage java script and css pages added to show the frontend notifications page
