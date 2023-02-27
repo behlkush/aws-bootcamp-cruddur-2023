@@ -193,6 +193,13 @@ After a bit of debugging i found out that i was selecting the MySQL tab which is
 ![Finally it is working](assets/postgres_working_client.png)
 
 
+  No other challenge was faced.
   
+  
+ # Homework Challenge
+ ## Pushing an app to Docker Hub
+ 
+ I have created an account with Docker Hub succesfully and pushing out an image.
+ Here is the screenshot of the same.
 
 
