@@ -107,3 +107,36 @@ Checked that my environment variable wasn't set. So i had used the correct API k
 
 Honeycomb is showing data:
 ![honeycomb data](assets/honeycomb_working.png)
+
+Next we add multiple spans in the telemetry by adding below code to home_activities.py
+```
+from opentelemetry import trace
+
+tracer = trace.get_tracer('home_activities')
+
+```
+
+In Run method enter below code and indent the function accordingly.
+```
+with tracer.start_as_current_span("home-activities-mock-data"):
+```
+
+Now added a custom attribute - that is what makes the spans replace the logs
+
+Update in home_activities.py run method:
+```
+      span = trace.get_current_span()
+      now = datetime.now(timezone.utc).astimezone()
+      span.set_attribute("app.now", now)
+ 
+```
+
+Finally after pushing all the changes I have tagged the code:
+
+```
+gitpod /workspace/aws-bootcamp-cruddur-2023 (main) $ git tag week2_kb_owensound
+gitpod /workspace/aws-bootcamp-cruddur-2023 (main) $ git push --tags
+Total 0 (delta 0), reused 0 (delta 0), pack-reused 0
+To https://github.com/behlkush/aws-bootcamp-cruddur-2023.git
+ * [new tag]         week2_kb_owensound -> week2_kb_owensound
+```
