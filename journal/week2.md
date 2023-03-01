@@ -103,4 +103,7 @@ ports:
 Next Made sure that am able to access backend and frontend.
 
 Made some API requests but didn't get any data on honeycomb.
-Checked that my environment variable wasn't set.
+Checked that my environment variable wasn't set. So i had used the correct API key but it was not set as i had reloaded my environment.
+
+Honeycomb is showing data:
+![honeycomb data](assets/honeycomb_working.png)
