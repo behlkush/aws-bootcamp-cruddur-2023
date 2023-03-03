@@ -140,3 +140,30 @@ Total 0 (delta 0), reused 0 (delta 0), pack-reused 0
 To https://github.com/behlkush/aws-bootcamp-cruddur-2023.git
  * [new tag]         week2_kb_owensound -> week2_kb_owensound
 ```
+
+
+# AWS XRAY Integration
+
+### Add npm i in gitpod.yml file so that frontend installs automatically
+```
+  - name: react-js
+    command: |
+      cd frontend-react-js
+      npm i    
+ ```
+ 
+ ### Why is Python SDK called BOTO3
+ So i researched about why SDK For python is called boto3. Boto is a popular dolphin in the Amazon River and Python SDK is named after it. (as it is the most popular one)
+ 
+ We are actually using aws-xray-sdk directly
+ 
+ #### Update requirements.txt
+ ```
+ aws-xray-sdk
+ ```
+ 
+ Then run
+ 
+ ```
+ pip install -r requirements.txt
+ ```
