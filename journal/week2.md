@@ -199,3 +199,69 @@ Next set up xray json: Add aws/json/xray.json
   }
 }
 ```
+
+Next on the shell under backend-flask directory run below commands to create an X-Ray group:
+```
+FLASK_ADDRESS="https://4567-${GITPOD_WORKSPACE_ID}.${GITPOD_WORKSPACE_CLUSTER_HOST}"
+aws xray create-group \
+   --group-name "Cruddur" \
+   --filter-expression "service(\"backend-flask\")"
+```
+
+Issue faced: aws cli not found.
+
+Reloaded my Gitpod environment and it worked.
+
+##### Add a sampling rule -- note below that sampling rule needs to be created from the workspace home directory and not from under backend-flask:
+```
+gitpod /workspace/aws-bootcamp-cruddur-2023/backend-flask (main) $ aws xray create-sampling-rule --cli-input-json file://aws/json/xray.json
+
+Error parsing parameter '--cli-input-json': Unable to load paramfile file://aws/json/xray.json: [Errno 2] No such file or directory: 'aws/json/xray.json'
+gitpod /workspace/aws-bootcamp-cruddur-2023/backend-flask (main) $ cd ..
+gitpod /workspace/aws-bootcamp-cruddur-2023 (main) $ aws xray create-sampling-rule --cli-input-json file://aws/json/xray.json
+{
+    "SamplingRuleRecord": {
+        "SamplingRule": {
+            "RuleName": "Cruddur",
+            "RuleARN": "arn:aws:xray:ca-central-1:342196396576:sampling-rule/Cruddur",
+            "ResourceARN": "*",
+            "Priority": 9000,
+            "FixedRate": 0.1,
+            "ReservoirSize": 5,
+            "ServiceName": "backend-flask",
+            "ServiceType": "*",
+            "Host": "*",
+            "HTTPMethod": "*",
+            "URLPath": "*",
+            "Version": 1,
+            "Attributes": {}
+        },
+        "CreatedAt": "2023-03-03T20:01:52+00:00",
+        "ModifiedAt": "2023-03-03T20:01:52+00:00"
+    }
+}
+```
+
+**Note**: that there are some things that are added to the code like yml files, jsons and so on and some steps are directly interacting with creating AWS services using the CLI.
+
+##### Set up X-RAY Daemon
+
+X-ray daemon start up to be containerized using docker-compose entry below:
+
+```
+  xray-daemon:
+    image: "amazon/aws-xray-daemon"
+    environment:
+      AWS_ACCESS_KEY_ID: "${AWS_ACCESS_KEY_ID}"
+      AWS_SECRET_ACCESS_KEY: "${AWS_SECRET_ACCESS_KEY}"
+      AWS_REGION: "us-east-1"
+    command:
+      - "xray -o -b xray-daemon:2000"
+    ports:
+      - 2000:2000/udp
+```
+
+**Note**:  I already figured out the ca-central-1 while typing and had fixed it, so my xray-daemon worked in a single go.
+
+Here is the working trace:
+![xray-working](assets/xray_trace.png)
