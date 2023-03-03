@@ -265,3 +265,54 @@ X-ray daemon start up to be containerized using docker-compose entry below:
 
 Here is the working trace:
 ![xray-working](assets/xray_trace.png)
+
+## Cloudwatch logs integration
+
+Update requirements.txt to add below:
+
+```
+watchtower
+```
+
+Then go into backend-flask dir and run:
+```
+pip install -r requirements.txt
+```
+
+Add the watchtower initializtion in app.py
+```
+import watchtower
+import logging
+from time import strftime
+
+# Configuring Logger to Use CloudWatch
+LOGGER = logging.getLogger(__name__)
+LOGGER.setLevel(logging.DEBUG)
+console_handler = logging.StreamHandler()
+cw_handler = watchtower.CloudWatchLogHandler(log_group='cruddur')
+LOGGER.addHandler(console_handler)
+LOGGER.addHandler(cw_handler)
+```
+
+
+Added environment variables in docker-compose.yml
+```
+      AWS_DEFAULT_REGION: "${AWS_DEFAULT_REGION}"
+      AWS_ACCESS_KEY_ID: "${AWS_ACCESS_KEY_ID}"
+      AWS_SECRET_ACCESS_KEY: "${AWS_SECRET_ACCESS_KEY}"
+```
+
+Further i added logging in home_activities.py and cloudwatch showed up those log statements. I have disabled it as per Andrew's suggestion. The working cloudwatch trace can be seen below:
+
+![Cloudwatch trace](assets/cloudwatch_trace.png)
+
+**Note**: I am not disabling logging yet and also not disabling X-ray, because i do have free credits and will like to use them
+
+## Rollbar Implementation
+
+Requirements.txt changes
+```
+blinker
+rollbar
+```
+
