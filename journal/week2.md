@@ -316,3 +316,61 @@ blinker
 rollbar
 ```
 
+Then run from backend-flask dir:
+```
+pip install -r requirements.txt
+```
+
+Set Rollbar access token in the environment:
+```
+export ROLLBAR_ACCESS_TOKEN="MYTOKEN"
+gp env ROLLBAR_ACCESS_TOKEN="MYTOKEN"
+```
+
+Imported packages in app.py
+```
+import rollbar
+import rollbar.contrib.flask
+from flask import got_request_exception
+```
+
+Updated app.py to initialize and then add the api causing exception
+```
+rollbar_access_token = os.getenv('ROLLBAR_ACCESS_TOKEN')
+@app.before_first_request
+def init_rollbar():
+    """init rollbar module"""
+    rollbar.init(
+        # access token
+        rollbar_access_token,
+        # environment name
+        'production',
+        # server root directory, makes tracebacks prettier
+        root=os.path.dirname(os.path.realpath(__file__)),
+        # flask already sets up logging
+        allow_logging_basic_config=False)
+
+    # send exceptions from `app` to rollbar, using flask's signal system.
+    got_request_exception.connect(rollbar.contrib.flask.report_exception, app)
+```
+
+
+Exception Code endpoint - app.py
+```
+# Rollbar Raise an exception through an endpoint
+@app.route('/rollbar/test')
+def rollbar_test():
+    rollbar.report_message('Hello World!', 'warning')
+    return "Hello World!"
+```
+
+I had added the environment variable in docker-compose.yml before hand:
+```
+ROLLBAR_ACCESS_TOKEN: "${ROLLBAR_ACCESS_TOKEN}"
+```
+
+#### What is Rollbar being used for?
+Its basically a cloud based bug tracking and monitoring solution. So when we visit Student portal and get 500 errors (5XX are server side errors), then those show up on the Rollbar and the bootcamp organization team can look into them.
+
+
+
