@@ -372,5 +372,7 @@ ROLLBAR_ACCESS_TOKEN: "${ROLLBAR_ACCESS_TOKEN}"
 #### What is Rollbar being used for?
 Its basically a cloud based bug tracking and monitoring solution. So when we visit Student portal and get 500 errors (5XX are server side errors), then those show up on the Rollbar and the bootcamp organization team can look into them.
 
+##### GOLDEN Words about Rollbar from Andrew:
+- The idea is when you run into an error, go to rollbar to see the details there because that will save us a lot of effort in debugging.
 
 
