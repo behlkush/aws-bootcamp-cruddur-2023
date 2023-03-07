@@ -6,8 +6,8 @@ import JoinSection from '../components/JoinSection'
 
 export default function DesktopSidebar(props) {
   const trendings = [
-    {"hashtag": "100DaysOfCloud", "count": 2053 },
-    {"hashtag": "CloudProject", "count": 8253 },
+    {"hashtag": "100DaysOfCloudInPythonKB?", "count": 2053 },
+    {"hashtag": "CloudProjectBootcampKB2023", "count": 8253 },
     {"hashtag": "AWS", "count": 9053 },
     {"hashtag": "FreeWillyReboot", "count": 7753 }
   ]
@@ -17,16 +17,11 @@ export default function DesktopSidebar(props) {
   ]
 
   let trending;
-  if (props.user) {
-    trending = <TrendingSection trendings={trendings} />
-  }
-
   let suggested;
-  if (props.user) {
-    suggested = <SuggestedUsersSection users={users} />
-  }
   let join;
   if (props.user) {
+    trending = <TrendingSection trendings={trendings} />
+    suggested = <SuggestedUsersSection users={users} />
   } else {
     join = <JoinSection />
   }
