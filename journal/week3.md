@@ -166,3 +166,10 @@ const onsubmit = async (event) => {
 }
 ```
   
+
+
+## Sing Up Page
+
+```
+import { Auth } from 'aws-amplify';
+```
