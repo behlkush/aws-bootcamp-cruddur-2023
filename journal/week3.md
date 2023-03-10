@@ -299,3 +299,9 @@ I noticed that last time i checked in my sign-in page code but it didn't take ef
     return false
   }
  ```
+
+#Implementation for Backend JWT token verification
+- Gone through each of the step in Andrew's video and follwed him step by step and got the code working
+- All issues that Andrew faced, I tried to understand them and most of them are clear to me
+- My app is in the same shape as Andrew's code as of now.
+
