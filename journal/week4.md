@@ -8,7 +8,7 @@ aws rds create-db-instance \
   --db-instance-class db.t3.micro \
   --engine postgres \
   --engine-version  14.6 \
-  --master-username root \
+  --master-username cruddurroot \
   --master-user-password MY_DB_PASSWORD \
   --allocated-storage 20 \
   --availability-zone ca-central-1a \
