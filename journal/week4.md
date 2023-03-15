@@ -167,3 +167,25 @@ db-schema-load
 CREATE EXTENSION
 ```
 
+### Next updated the db-schema-load script to use environment variabled to determing prod and also set colours in echo 
+
+```
+CYAN='\033[1;36m'
+NO_COLOR='\033[0m'
+LABEL="db-schema-load"
+printf "${CYAN}== ${LABEL}${NO_COLOR}\n"
+```
+
+### Create tables
+
+![https://www.postgresql.org/docs/current/sql-createtable.html](Create Tables)
+
+```
+CREATE TABLE public.users (
+  uuid UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  display_name text,
+  handle text
+  cognito_user_id text,
+  created_at TIMESTAMP default current_timestamp NOT NULL
+);
+```
