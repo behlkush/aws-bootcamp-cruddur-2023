@@ -178,7 +178,7 @@ printf "${CYAN}== ${LABEL}${NO_COLOR}\n"
 
 ### Create tables
 
-![https://www.postgresql.org/docs/current/sql-createtable.html]
+https://www.postgresql.org/docs/current/sql-createtable.html
 
 ```
 CREATE TABLE public.users (
