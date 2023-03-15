@@ -180,12 +180,103 @@ printf "${CYAN}== ${LABEL}${NO_COLOR}\n"
 
 https://www.postgresql.org/docs/current/sql-createtable.html
 
+
+Make sure that create table always passes:
+```
+DROP TABLE IF EXISTS public.users;
+DROP TABLE IF EXISTS public.activities;
+```
+
 ```
 CREATE TABLE public.users (
   uuid UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
   display_name text,
-  handle text
+  handle text,
   cognito_user_id text,
   created_at TIMESTAMP default current_timestamp NOT NULL
 );
 ```
+
+```
+CREATE TABLE public.activities (
+  uuid UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  message text NOT NULL,
+  replies_count integer DEFAULT 0,
+  reposts_count integer DEFAULT 0,
+  likes_count integer DEFAULT 0,
+  reply_to_activity_uuid integer,
+  expires_at TIMESTAMP,
+  created_at TIMESTAMP default current_timestamp NOT NULL
+);
+```
+
+Create script to connect and then check if the tables created above exist
+
+```
+gitpod /workspace/aws-bootcamp-cruddur-2023 (main) $ ./backend-flask/bin/db-connect
+== db-connect
+psql (13.10 (Ubuntu 13.10-1.pgdg20.04+1))
+Type "help" for help.
+
+cruddur=# \dl
+      Large objects
+ ID | Owner | Description 
+----+-------+-------------
+(0 rows)
+
+cruddur=# \dt
+           List of relations
+ Schema |    Name    | Type  |  Owner   
+--------+------------+-------+----------
+ public | activities | table | postgres
+ public | users      | table | postgres
+(2 rows)
+```
+
+Add data to tables usind seed bash script and add the below in seed.sql
+```
+-- this file was manually created
+INSERT INTO public.users (display_name, handle, cognito_user_id)
+VALUES
+  ('Andrew Brown', 'andrewbrown' ,'MOCK'),
+  ('Owen Sound', 'owensound' ,'MOCK'),
+  ('Andrew Bayko', 'bayko' ,'MOCK');
+
+INSERT INTO public.activities (user_uuid, message, expires_at)
+VALUES
+  (
+    (SELECT uuid from public.users WHERE users.handle = 'owensound' LIMIT 1),
+    'This was imported as seed data!',
+    current_timestamp + interval '10 day'
+  )
+```
+
+Updates schema.sql to include: this is to fix the error we are getting related to uuid
+```
+user_uuid UUID NOT NULL,
+```
+
+
+Check the table contents by connecting to DB using the connect bash script
+```
+cruddur=# SELECT * FROM activities;
+cruddur=# \x ON
+Expanded display is on.
+cruddur=# SELECT * FROM activities;
+-[ RECORD 1 ]----------+-------------------------------------
+uuid                   | d5baf2e3-3ad4-446e-ab36-a6f12ee59958
+user_uuid              | 97a771f3-98eb-452d-83e5-7388a1c76729
+message                | This was imported as seed data!
+replies_count          | 0
+reposts_count          | 0
+likes_count            | 0
+reply_to_activity_uuid | 
+expires_at             | 2023-03-25 17:28:48.076099
+created_at             | 2023-03-15 17:28:48.076099
+```
+
+you can use \x auto as well to display the table contents in readable format.
+
+
+
+
