@@ -3,4 +3,12 @@
 schema_path=$(realpath .)/backend-flask/db/schema.sql
 echo "db-schema-load"
 
-psql $CONNECTION_URL cruddur < $schema_path
+if [ "$1" = "prod" ]; then
+  echo "This is production env"
+  CON_URL = $PROD_CONNECTION_URL
+else
+  echo "This is dev env"
+  CON_URL = $CONNECTION_URL
+fi
+
+psql $CON_URL cruddur < $schema_path
