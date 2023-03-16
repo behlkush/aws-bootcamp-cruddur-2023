@@ -8,7 +8,6 @@ printf "${CYAN}==== ${LABEL}${NO_COLOR}\n"
 
 bin_path=$(realpath .)/backend-flask/bin
 
-echo $bin_path
 
 source "$bin_path/db-drop"
 source "$bin_path/db-create"
