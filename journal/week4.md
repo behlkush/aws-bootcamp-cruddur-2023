@@ -278,5 +278,78 @@ created_at             | 2023-03-15 17:28:48.076099
 you can use \x auto as well to display the table contents in readable format.
 
 
+### Easy database set up using db-setup script
+```
+#! /usr/bin/bash
+-e # stop if it fails at any point
+
+CYAN='\033[1;36m'
+NO_COLOR='\033[0m'
+LABEL="db-setup"
+printf "${CYAN}==== ${LABEL}${NO_COLOR}\n"
+
+bin_path=$(realpath .)/backend-flask/bin
+
+
+source "$bin_path/db-drop"
+source "$bin_path/db-create"
+source "$bin_path/db-schema-load"
+source "$bin_path/db-seed"
+```
+
+
+### Install postgres driver
+
+Drivers are needed to make it work with the underlying hardware. We are only using software here but we need to make postgres work with python.
+So we are looking to install python driver for postgres
+
+```
+psycopg[binary]
+psycopg[pool]
+```
+The library documentation can be found here: https://www.psycopg.org/psycopg3/
+
+Next run
+```
+pip install -r requirements.txt
+```
+
+We will be using connection pooling because we are working with multiple DB connections. And there is a certain number of DB connections a DB can handle.
+That's where connection pools come in handy. Idea is to re-use connections as users are coming and hitting your database.
+
+## DB Object and connection pool
+
+Create db.py in lib dir in backend app:
+
+```
+from psycopg_pool import ConnectionPool
+import os
+
+def query_wrap_object(template):
+  sql = '''
+  (SELECT COALESCE(row_to_json(object_row),'{}'::json) FROM (
+  {template}
+  ) object_row);
+  '''
+
+def query_wrap_array(template):
+  sql = '''
+  (SELECT COALESCE(array_to_json(array_agg(row_to_json(array_row))),'[]'::json) FROM (
+  {template}
+  ) array_row);
+  '''
+
+connection_url = os.getenv("CONNECTION_URL")
+pool = ConnectionPool(connection_url)
+```
+
+Update docker compose to include
+```
+CONNECTION_URL: ${CONNECTION_URL}
+```
+
+
+# Issues
+psql command not found even when psql container is loaded and running. Seems to be a path issue
 
 
