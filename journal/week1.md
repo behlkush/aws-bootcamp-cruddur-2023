@@ -168,7 +168,7 @@ volumes:
 ```
 
 #### Install postgres client
-
+.gitpod.yml file
 ```
   - name: postgres
     init: |
