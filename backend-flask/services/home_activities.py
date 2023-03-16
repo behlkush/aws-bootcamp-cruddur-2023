@@ -18,6 +18,8 @@ class HomeActivities:
         # this will return a tuple
         # the first field being the data
         json = cur.fetchall()
+
+    print(json)
     return json[0]
 
 
