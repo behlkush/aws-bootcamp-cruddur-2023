@@ -376,11 +376,16 @@ Also updated db.py to fix the traps.
 
 Update the security group IDs because they will be needed everytime gitpod restarts. Gitpod will have a new public IP so SG needs to be updated everytime.
 
+Get public IP of gitpod:
+```
+GITPOD_IP=$(curl ifconfig.me)
+```
+
 ```
 export DB_SG_ID="sg-0b725ebab7e25635e"
 gp env DB_SG_ID="sg-0b725ebab7e25635e"
-export DB_SG_RULE_ID="sgr-070061bba156cfa88"
-gp env DB_SG_RULE_ID="sgr-070061bba156cfa88"
+export DB_SG_RULE_ID="sgr-02fdf9dac5ce5c837"
+gp env DB_SG_RULE_ID="sgr-02fdf9dac5ce5c837"
 ```
 
 Add the new rule:
@@ -389,6 +394,16 @@ aws ec2 modify-security-group-rules \
     --group-id $DB_SG_ID \
     --security-group-rules "SecurityGroupRuleId=$DB_SG_RULE_ID,SecurityGroupRule={Description=GITPOD,IpProtocol=tcp,FromPort=5432,ToPort=5432,CidrIpv4=$GITPOD_IP/32}"
 ```
+
+Add above code in a script: rds-sg-rule-update and then make it run everytime by adding the commands below in .gitpod.yml file
+
+```
+    command: |
+      export GITPOD_IP=$(curl ifconfig.me)
+      source "$THEIA_WORKSPACE_ROOT/backend-flask/bin/rds-update-sg-rule"
+```
+Note: I have added the bin to correct path already.
+
 
 # Issues
 psql command not found even when psql container is loaded and running. Seems to be a path issue.  - It was not a path issue. I checked .gitpod.yml and it had the psql entry to install and configure psql.
