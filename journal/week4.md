@@ -483,6 +483,24 @@ AWSLambdaVPCAccessExecutionRole
 }
 ```
 
+# Taste of Success
+cruddur=> select * from users;
+-[ RECORD 1 ]---+-------------------------------------
+uuid            | ecf4bf20-ab98-4bc5-8ddd-e356322bffd1
+display_name    | kush behl
+email           | kushbehl@gmail.com
+handle          | kushbehl
+cognito_user_id | 42cac012-4ec3-4001-b857-b44ddfb8cd54
+created_at      | 2023-03-17 20:34:48.925093
+-[ RECORD 2 ]---+-------------------------------------
+uuid            | 8e73a490-1b69-4564-bd9f-9c187a8a9057
+display_name    | kiaan behl
+email           | behlkiaan@gmail.com
+handle          | owensound
+cognito_user_id | 4b0b8699-4a3c-460a-9fb7-7546d2287064
+created_at      | 2023-03-17 20:39:32.308119
+
+
 # Issues
 1. psql command not found even when psql container is loaded and running. Seems to be a path issue.  - It was not a path issue. I checked .gitpod.yml and it had the psql entry to install and configure psql.
 
