@@ -7,6 +7,7 @@ def query_wrap_object(template):
   {template}
   ) object_row);
   '''
+  return sql
 
 def query_wrap_array(template):
   sql = '''
@@ -14,6 +15,7 @@ def query_wrap_array(template):
   {template}
   ) array_row);
   '''
+  return sql
 
 connection_url = os.getenv("CONNECTION_URL")
 pool = ConnectionPool(connection_url)
