@@ -1,17 +1,17 @@
 from datetime import datetime, timedelta, timezone
 from opentelemetry import trace
 import logging
-from lib.db import pool
+from lib.db import pool, query_wrap_array
 
 tracer = trace.get_tracer("home_activities")
 
 class HomeActivities:
   def run(cognito_user_id=None):
     # LOGGER.info("home activities run() method")
-    sql = """
+    sql = query_wrap_array("""
     SELECT * FROM public.activities
-    """
-    print(sql)
+    """)
+
     with pool.connection() as conn:
       with conn.cursor() as cur:
         cur.execute(sql)
