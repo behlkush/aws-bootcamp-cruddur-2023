@@ -1,5 +1,6 @@
 import json
 import psycopg2
+import os 
 
 def lambda_handler(event, context):
     user = event['request']['userAttributes']
