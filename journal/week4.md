@@ -372,7 +372,23 @@ Also updated db.py to fix the traps.
 ##### The SQL query is finally working and home activities is now showing data by fetching it from the psql database
 
 
+## Connect to AWS RDS instance.
 
+Update the security group IDs because they will be needed everytime gitpod restarts. Gitpod will have a new public IP so SG needs to be updated everytime.
+
+```
+export DB_SG_ID="sg-0b725ebab7e25635e"
+gp env DB_SG_ID="sg-0b725ebab7e25635e"
+export DB_SG_RULE_ID="sgr-070061bba156cfa88"
+gp env DB_SG_RULE_ID="sgr-070061bba156cfa88"
+```
+
+Add the new rule:
+```
+aws ec2 modify-security-group-rules \
+    --group-id $DB_SG_ID \
+    --security-group-rules "SecurityGroupRuleId=$DB_SG_RULE_ID,SecurityGroupRule={Description=GITPOD,IpProtocol=tcp,FromPort=5432,ToPort=5432,CidrIpv4=$GITPOD_IP/32}"
+```
 
 # Issues
 psql command not found even when psql container is loaded and running. Seems to be a path issue.  - It was not a path issue. I checked .gitpod.yml and it had the psql entry to install and configure psql.
