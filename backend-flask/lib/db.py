@@ -3,7 +3,7 @@ import os
 
 def query_wrap_object(template):
   sql = '''
-  (SELECT COALESCE(row_to_json(object_row),'{}'::json) FROM (
+  (SELECT COALESCE(row_to_json(object_row),'{{}}'::json) FROM (
   {template}
   ) object_row);
   '''
