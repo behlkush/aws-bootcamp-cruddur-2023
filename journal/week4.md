@@ -413,3 +413,4 @@ I hardcoded the CONNECTION_URL value in docker-compose.yml and that fixed the is
 
 2. Another issue i faced is while trying to execute permissions on SG rule for AWS RDS. My code was not executing correctly and GITPOD_IP was not getting exported. It was because of an identation issue. On fixing the identation in .gitpod.yml file it worked.
 
+3. Another issue i faced is that the PROD_CONNECTION_URL was not set to have the correct username. I fixed that and it started connecting to AWS RDS.
