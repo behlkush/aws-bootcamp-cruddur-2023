@@ -408,8 +408,60 @@ Note: I have added the bin to correct path already.
 # Lambda Post Confirmaton
 
 - Created a Lambda function with python 3.8 and called it cruddur-post-confirmation
-- 
+Code for function
+```
+import json
+import psycopg2
 
+def lambda_handler(event, context):
+    user = event['request']['userAttributes']
+    user_display_name = user['name']
+    user_email = user['email']
+    user_handle = user['preferred_username']
+    user_cognito_id = user['sub']
+    try:
+        #conn = psycopg2.connect(
+#             host=(os.getenv('PG_HOSTNAME')),
+#             database=(os.getenv('PG_DATABASE')),
+#             user=(os.getenv('PG_USERNAME')),
+#             password=(os.getenv('PG_SECRET'))
+#         )
+        conn = psycopg2.connect(os.getenv('CONNECTION_URL'))
+        cur = conn.cursor()
+
+        sql = f"""
+        INSERT INTO users (
+        display_name, 
+        email,
+        handle, 
+        cognito_user_id) 
+        VALUES(
+        {user_display_name}, 
+        {user_email}, 
+        {user_handle},
+        {user_cognito_id})
+        """
+        cur.execute(sql)
+        conn.commit() 
+
+    except (Exception, psycopg2.DatabaseError) as error:
+        print(error)
+        
+    finally:
+        if conn is not None:
+            cur.close()
+            conn.close()
+            print('Database connection closed.')
+
+    return event
+```
+Add CONNECTION_URL environment variable under configuration.
+
+Next added a layer:
+```
+arn:aws:lambda:ca-central-1:898466741470:layer:psycopg2-py38:1
+
+```
 
 # Issues
 1. psql command not found even when psql container is loaded and running. Seems to be a path issue.  - It was not a path issue. I checked .gitpod.yml and it had the psql entry to install and configure psql.
