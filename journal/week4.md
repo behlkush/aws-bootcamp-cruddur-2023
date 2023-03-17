@@ -349,7 +349,20 @@ CONNECTION_URL: ${CONNECTION_URL}
 ```
 
 
+# Update HomeActivities.py to use psql instead of hardcoding the return values
+```
+```
+
+
+
+
+
+
 # Issues
-psql command not found even when psql container is loaded and running. Seems to be a path issue
+psql command not found even when psql container is loaded and running. Seems to be a path issue.  - It was not a path issue. I checked .gitpod.yml and it had the psql entry to install and configure psql.
+
+I hardcoded the CONNECTION_URL value in docker-compose.yml and that fixed the issue.
+
+
 
 
