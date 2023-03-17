@@ -405,6 +405,12 @@ Add above code in a script: rds-sg-rule-update and then make it run everytime by
 Note: I have added the bin to correct path already.
 
 
+# Lambda Post Confirmaton
+
+- Created a Lambda function with python 3.8 and called it cruddur-post-confirmation
+- 
+
+
 # Issues
 1. psql command not found even when psql container is loaded and running. Seems to be a path issue.  - It was not a path issue. I checked .gitpod.yml and it had the psql entry to install and configure psql.
 
