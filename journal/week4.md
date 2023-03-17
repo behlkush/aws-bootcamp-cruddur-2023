@@ -351,9 +351,25 @@ CONNECTION_URL: ${CONNECTION_URL}
 
 # Update HomeActivities.py to use psql instead of hardcoding the return values
 ```
+SELECT
+        activities.uuid,
+        users.display_name,
+        users.handle,
+        activities.message,
+        activities.replies_count,
+        activities.reposts_count,
+        activities.likes_count,
+        activities.reply_to_activity_uuid,
+        activities.expires_at,
+        activities.created_at
+      FROM public.activities
+      LEFT JOIN public.users ON users.uuid = activities.user_uuid
+      ORDER BY activities.created_at DESC
 ```
 
+Also updated db.py to fix the traps.
 
+##### The SQL query is finally working and home activities is now showing data by fetching it from the psql database
 
 
 
