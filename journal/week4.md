@@ -406,10 +406,10 @@ Note: I have added the bin to correct path already.
 
 
 # Issues
-psql command not found even when psql container is loaded and running. Seems to be a path issue.  - It was not a path issue. I checked .gitpod.yml and it had the psql entry to install and configure psql.
+1. psql command not found even when psql container is loaded and running. Seems to be a path issue.  - It was not a path issue. I checked .gitpod.yml and it had the psql entry to install and configure psql.
 
 I hardcoded the CONNECTION_URL value in docker-compose.yml and that fixed the issue.
 
 
-
+2. Another issue i faced is while trying to execute permissions on SG rule for AWS RDS. My code was not executing correctly and GITPOD_IP was not getting exported. It was because of an identation issue. On fixing the identation in .gitpod.yml file it worked.
 
