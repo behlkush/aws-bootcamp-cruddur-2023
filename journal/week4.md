@@ -463,6 +463,26 @@ arn:aws:lambda:ca-central-1:898466741470:layer:psycopg2-py38:1
 
 ```
 
+Added lambda permission to execute VPC by creating a policy and attaching it to the lambda
+AWSLambdaVPCAccessExecutionRole
+
+```
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": [
+                "ec2:DescribeNetworkInterfaces",
+                "ec2:CreateNetworkInterface",
+                "ec2:AttachNetworkInterface"
+            ],
+            "Resource": "*"
+        }
+    ]
+}
+```
+
 # Issues
 1. psql command not found even when psql container is loaded and running. Seems to be a path issue.  - It was not a path issue. I checked .gitpod.yml and it had the psql entry to install and configure psql.
 
