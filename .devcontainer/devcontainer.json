@@ -22,7 +22,7 @@
 			}
 		}
 	},
-	"postCreateCommand": "bash .devcontainer/postCreateCommand.sh"
+	"postCreateCommand": "bash .devcontainer/postCreateCommand.sh && sh /workspaces/aws-bootcamp-cruddur-2023/backend-flask/bin/rds-update-sg-rule"
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
 	// "forwardPorts": [],
 
