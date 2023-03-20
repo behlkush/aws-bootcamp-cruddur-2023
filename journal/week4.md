@@ -501,6 +501,11 @@ cognito_user_id | 4b0b8699-4a3c-460a-9fb7-7546d2287064
 created_at      | 2023-03-17 20:39:32.308119
 
 
+# Create activity changes
+- Modularized DB.py
+- Added SQL / Activities folder and added mulitple SQL query files there
+- Updated home activities and create activity service to use this templatized version of DB with the psycopg library
+
 # Issues
 1. psql command not found even when psql container is loaded and running. Seems to be a path issue.  - It was not a path issue. I checked .gitpod.yml and it had the psql entry to install and configure psql.
 
