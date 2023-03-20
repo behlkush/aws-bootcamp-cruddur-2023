@@ -1,7 +1,7 @@
-from psycopg_pool import ConnectionPool
 import os
 import re
 import sys
+from psycopg_pool import ConnectionPool
 from flask import current_app as app
 
 
