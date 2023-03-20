@@ -1,11 +1,46 @@
-import uuid
 from datetime import datetime, timedelta, timezone
+
+from lib.db import db
+
 class CreateActivity:
   def run(message, user_handle, ttl):
     model = {
       'errors': None,
       'data': None
     }
+
+    model = CreateActivity.validate_input(message, user_handle, ttl)
+
+    # If validate input returned errors then no need to reach out to DB
+    if model['errors']:
+      model['data'] = {
+        'handle':  user_handle,
+        'message': message
+      }   
+    else:
+      expires_at = (now + ttl_offset)
+      uuid = CreateActivity.create_activity(user_handle, message, expires_at)
+
+      object_json = CreateActivity.query_object_activity(uuid)
+      model['data'] = object_json
+    return model
+
+  def create_activity(handle, message, expires_at):
+    sql = db.template('activities','create')
+    uuid = db.query_commit(sql,{
+      'handle': handle,
+      'message': message,
+      'expires_at': expires_at
+    })
+    return uuid
+
+  def query_object_activity(uuid):
+    sql = db.template('activities','object')
+    return db.query_object_json(sql,{
+      'uuid': uuid
+    })
+
+  def validate_input(model, message, user_handle, ttl):
 
     now = datetime.now(timezone.utc).astimezone()
 
@@ -34,18 +69,4 @@ class CreateActivity:
     elif len(message) > 280:
       model['errors'] = ['message_exceed_max_chars'] 
 
-    if model['errors']:
-      model['data'] = {
-        'handle':  user_handle,
-        'message': message
-      }   
-    else:
-      model['data'] = {
-        'uuid': uuid.uuid4(),
-        'display_name': 'Andrew Brown',
-        'handle':  user_handle,
-        'message': message,
-        'created_at': now.isoformat(),
-        'expires_at': (now + ttl_offset).isoformat()
-      }
     return model
