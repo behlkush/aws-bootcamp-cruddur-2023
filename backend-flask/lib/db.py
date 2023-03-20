@@ -8,7 +8,9 @@ from flask import current_app as app
 class Db:
     def __init__(self):
         # Get the CONNECTION_URL form environment and pass it to ConnctionPool imported from psycopg_pool
-        self.pool = ConnectionPool(os.getenv("CONNECTION_URL"))
+        connection_url = os.getenv("CONNECTION_URL")
+        app.logger.debug("Connection URL is" + connection_url)
+        self.pool = ConnectionPool(connection_url)
 
 #################################
 #################################
