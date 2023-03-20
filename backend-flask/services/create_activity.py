@@ -8,7 +8,7 @@ class CreateActivity:
     def run(message, user_handle, ttl):
         model, expires_at = CreateActivity.validate_input(
             message, user_handle, ttl)
-
+        print("am here")
         # If validate input returned errors then no need to reach out to DB
         if model['errors']:
             model['data'] = {
@@ -23,7 +23,7 @@ class CreateActivity:
             model['data'] = object_json
         return model
 
-    @staticmethod
+    @ staticmethod
     def create_activity(handle, message, expires_at):
         sql = db.template('activities', 'create')
         uuid = db.query_commit(sql, {
@@ -33,14 +33,14 @@ class CreateActivity:
         })
         return uuid
 
-    @staticmethod
+    @ staticmethod
     def query_object_activity(uuid):
         sql = db.template('activities', 'object')
         return db.query_object_json(sql, {
             'uuid': uuid
         })
 
-    @staticmethod
+    @ staticmethod
     def validate_input(message, user_handle, ttl):
         model = {
             'errors': None,
