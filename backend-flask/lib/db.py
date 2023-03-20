@@ -17,11 +17,10 @@ class Db:
   def template(self, *args):
     # Args cam be any length but are a tuple, the last argument of args will be the file name 
     # From which DB SQL need to be loaded
-    args[-1] = args[-1] + ".sql" 
+    pathing = list((app.root_path,'db','sql',) + args)
+    pathing[-1] = pathing[-1] + ".sql"
 
-    pathing = list((app.root_path, 'db', 'sql',) + args)
-    template_path = os.path.join(pathing)
-
+    template_path = os.path.join(*pathing)
     # Coloured printing
     green = '\033[92m'
     no_color = '\033[0m'

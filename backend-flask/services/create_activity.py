@@ -9,7 +9,7 @@ class CreateActivity:
       'data': None
     }
 
-    model = CreateActivity.validate_input(message, user_handle, ttl)
+    model, expires_at = CreateActivity.validate_input(model, message, user_handle, ttl)
 
     # If validate input returned errors then no need to reach out to DB
     if model['errors']:
@@ -18,7 +18,6 @@ class CreateActivity:
         'message': message
       }   
     else:
-      expires_at = (now + ttl_offset)
       uuid = CreateActivity.create_activity(user_handle, message, expires_at)
 
       object_json = CreateActivity.query_object_activity(uuid)
@@ -69,4 +68,5 @@ class CreateActivity:
     elif len(message) > 280:
       model['errors'] = ['message_exceed_max_chars'] 
 
-    return model
+    expires_at = now + ttl_offset
+    return model, expires_at
