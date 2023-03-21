@@ -1,7 +1,7 @@
 {
   "name": "Free AWS Cloud Bootcamp Development Environment",
-  "build": { "dockerfile": "Dockerfile" },  
-
+  "build": { "dockerfile": "Dockerfile" }, 
+  
   "features": {
     "ghcr.io/devcontainers/features/docker-in-docker:2": {}
   },
@@ -47,16 +47,10 @@
 		"terminal.integrated.defaultProfile.linux": "bash"
 	},	
   
-  "containerEnv": {
-    "AWS_ACCESS_KEY_ID":      "${localEnv:AWS_ACCESS_KEY_ID}",
-    "AWS_ACCOUNT_ID":         "${localEnv:AWS_ACCOUNT_ID}",
-    "AWS_DEFAULT_REGION":     "${localEnv:AWS_DEFAULT_REGION}",
-    "AWS_SECRET_ACCESS_KEY":  "${localEnv:AWS_SECRET_ACCESS_KEY}",
-    "DOCKER_USERNAME":        "${localEnv:DOCKER_USERNAME}",
-    "DOCKER_PASSWORD":        "${localEnv:DOCKER_PASSWORD}",
-    "HONEYCOMB_API_KEY":      "${localEnv:HONEYCOMB_API_KEY}",
-    "ROLLBAR_ACCESS_TOKEN":   "${localEnv:ROLLBAR_ACCESS_TOKEN}"
-  },
+
+  "runArgs": [
+    "--env-file", "${localWorkspaceFolder}/.devcontainer/devcontainer.env"
+  ], 
   
   "remoteUser": "bootcamp",
 
