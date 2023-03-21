@@ -506,6 +506,55 @@ created_at      | 2023-03-17 20:39:32.308119
 - Added SQL / Activities folder and added mulitple SQL query files there
 - Updated home activities and create activity service to use this templatized version of DB with the psycopg library
 
+
+To make crud work was a really big challenge for me. 
+
+#### Week 4 Roadblocks faced:
+- I ran out of gitpod credits 
+- Set up a github codespaces workspace with all the settings, devcontainers stuff after following Andrew's video and got it working but crud functionality was still not working. I tried to fix it using all my effort but they all went in vain. I doubted on using and finishing credits on codespaces as well. My print and debug logs were also not showing up in codespace.
+- That is when i decided to follow Jason's approach of setting up the dev containers locally. Spent in another 6-8 hours setting up everything locally and i will come up with the full write up on how I was able to set up everything locally. It involved more than the documented efforts here: https://www.linuxtek.ca/2023/03/10/aws-cloud-project-bootcamp-solving-the-cde-problem/ This is because every case is a different. The difference in my case was that i was setting everything on mac. So i will do a write up for setting the code in dev containers using mac.
+- Finally after setting up and after getting the cruddur to a working state, i started working on finding the cause of mulitple errors that i was facing.
+- There were errors 
+1. Error -- Can't find activities.sql file -- now it took hours to find that i had a type in the activities.sql file and as missing an I.
+2. UUID is a Not null field and the create.sql was throwing error. 
+- After deubugging for hours, i found the root cause. The handle i was passing from app.py was andrewbrown and i had no user named andrewbrown in my RDS. 
+- I fixed my code to change the handle to ownensound which fixed that issue
+
+Everything in week4 is now working and here is the proof:
+
+```
+bootcamp@654240dcf12b:/workspaces/aws-bootcamp-cruddur-2023$ psql $PROD_CONNECTION_URL
+psql (13.10 (Ubuntu 13.10-1.pgdg22.04+1), server 14.6)
+WARNING: psql major version 13, server major version 14.
+         Some psql features might not work.
+SSL connection (protocol: TLSv1.2, cipher: ECDHE-RSA-AES256-GCM-SHA384, bits: 256, compression: off)
+Type "help" for help.
+
+cruddur=> \dt
+             List of relations
+ Schema |    Name    | Type  |    Owner    
+--------+------------+-------+-------------
+ public | activities | table | cruddurroot
+ public | users      | table | cruddurroot
+(2 rows)
+
+cruddur=> \x on
+Expanded display is on.
+cruddur=> select * from activities;
+-[ RECORD 1 ]----------+-------------------------------------
+uuid                   | fc2caf6f-14dc-4284-ab6f-17ccdbadd9a9
+user_uuid              | 4f06fd1e-3230-4707-8d79-bf6041b2eca8
+message                | asdfasdfsda
+replies_count          | 0
+reposts_count          | 0
+likes_count            | 0
+reply_to_activity_uuid | 
+expires_at             | 2023-03-28 15:15:15.948576
+created_at             | 2023-03-21 15:15:16.158457
+
+```
+
+
 # Issues
 1. psql command not found even when psql container is loaded and running. Seems to be a path issue.  - It was not a path issue. I checked .gitpod.yml and it had the psql entry to install and configure psql.
 
