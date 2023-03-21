@@ -132,8 +132,8 @@ class Db:
         print("psycopg traceback:", traceback, "-- type:", err_type)
 
         # print the pgcode and pgerror exceptions
-        print("pgerror: ", err.pgerror)
-        print("pgcode: ", err.pgcode, "\n")
+        # print("pgerror: ", err.pgerror)
+        # print("pgcode: ", err.pgcode, "\n")
 #################################
 #################################
 # Class Main functionality -- End

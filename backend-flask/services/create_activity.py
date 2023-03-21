@@ -25,6 +25,11 @@ class CreateActivity:
 
     @ staticmethod
     def create_activity(handle, message, expires_at):
+        # Coloured printing
+        # green = '\033[92m'
+        # no_color = '\033[0m'
+        # print("\n")
+        # print(f'{green} Create Activity: {handle} {no_color}')
         sql = db.template('activities', 'create')
         uuid = db.query_commit(sql, {
             'handle': handle,

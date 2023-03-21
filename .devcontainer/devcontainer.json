@@ -37,15 +37,15 @@
     }
   },     
   
-  "settings": {
-		"terminal.integrated.profiles.linux": {
-			"bash": {
-				"path": "/usr/bin/bash",
-				"icon": "terminal-bash"
-			}
-		},
-		"terminal.integrated.defaultProfile.linux": "bash"
-	},	
+  // "settings": {
+	// 	"terminal.integrated.profiles.linux": {
+	// 		"bash": {
+	// 			"path": "/usr/bin/bash",
+	// 			"icon": "terminal-bash"
+	// 		}
+	// 	},
+	// 	"terminal.integrated.defaultProfile.linux": "bash"
+	// },	
   
 
   "runArgs": [
