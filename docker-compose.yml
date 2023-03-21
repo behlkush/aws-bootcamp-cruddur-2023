@@ -26,7 +26,7 @@ services:
       AWS_COGNITO_USER_POOL_CLIENT_ID: "34fjuf4h7vmu9fc2s5niu5uo11"    
     build: ./backend-flask
     # From JASON
-    image: ${DOCKER_USERNAME}/cruddur-backend-dev:latest
+    #image: ${DOCKER_USERNAME}/cruddur-backend-dev:latest
     ports:
       - "4567:4567"
     volumes:
@@ -41,7 +41,7 @@ services:
       REACT_APP_AWS_USER_POOLS_ID: "ca-central-1_Sn1lgzw8T"
       REACT_APP_CLIENT_ID: "34fjuf4h7vmu9fc2s5niu5uo11"
     build: ./frontend-react-js
-    image: ${DOCKER_USERNAME}/cruddur-frontend-dev:latest
+    #image: ${DOCKER_USERNAME}/cruddur-frontend-dev:latest
     ports:
       - "3000:3000"
     volumes:
