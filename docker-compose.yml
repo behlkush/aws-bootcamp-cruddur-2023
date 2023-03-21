@@ -23,7 +23,8 @@ services:
       AWS_SECRET_ACCESS_KEY: "${AWS_SECRET_ACCESS_KEY}"
       ROLLBAR_ACCESS_TOKEN: "${ROLLBAR_ACCESS_TOKEN}"
       AWS_COGNITO_USER_POOL_ID: "ca-central-1_Sn1lgzw8T"
-      AWS_COGNITO_USER_POOL_CLIENT_ID: "34fjuf4h7vmu9fc2s5niu5uo11"    
+      AWS_COGNITO_USER_POOL_CLIENT_ID: "34fjuf4h7vmu9fc2s5niu5uo11" 
+      PYTHONUNBUFFERED: 1
     build: ./backend-flask
     # From JASON
     #image: ${DOCKER_USERNAME}/cruddur-backend-dev:latest
