@@ -28,3 +28,22 @@ In Relational DBs we are modeling tables as Database wants it.
 
 **Data Model Design**
 ![Data Model Design](assets/week5/data_model.png)
+
+# DynamoDB Begins
+
+- First of all I enabled Dynamo DB portion in docker-compose.yml
+
+```
+  dynamodb-local:
+  #   # https://stackoverflow.com/questions/67533058/persist-local-dynamodb-data-in-volumes-lack-permission-unable-to-open-databa
+  #   # We needed to add user:root to get this working.
+    user: root
+    command: "-jar DynamoDBLocal.jar -sharedDb -dbPath ./data"
+    image: "amazon/dynamodb-local:latest"
+    container_name: dynamodb-local
+    ports:
+      - "8000:8000"
+    volumes:
+      - "./docker/dynamodb:/home/dynamodblocal/data"
+    working_dir: /home/dynamodblocal
+```
