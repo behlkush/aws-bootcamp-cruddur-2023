@@ -10,9 +10,11 @@ attrs = {
 if "prod" in sys.argv:
   attrs = {}
 
-dynamodb = boto3.client('dynamodb', **attrs)
+ddb = boto3.client('dynamodb', **attrs)
 
-response = dynamodb.create_table(
+table_name = 'cruddur-message'
+
+response = ddb.create_table(
     TableName=table_name,
     AttributeDefinitions=[
         {
@@ -62,3 +64,5 @@ response = dynamodb.create_table(
         'WriteCapacityUnits': 5
     }
 )
+
+print(response)
