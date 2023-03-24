@@ -54,5 +54,5 @@
   
   "remoteUser": "bootcamp",
 
-  "postAttachCommand": "cd ./frontend-react-js && npm install && cd ../backend-flask && pip install -r requirements.txt &&  sh bin/rds-update-sg-rule"
+  "postAttachCommand": "cd ./frontend-react-js && npm install && cd ../backend-flask && pip install -r requirements.txt &&  sh bin/rds/update-sg-rule"
 }
