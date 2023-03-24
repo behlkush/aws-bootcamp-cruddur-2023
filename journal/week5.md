@@ -17,6 +17,7 @@ A few key points to note:
   - How often I am doing it
 
 - In NoSQL DBs we are modeling our data as per
+
   - How my application will be using it
   - How my users will be using it
   - What kind of reporting we will be doing
