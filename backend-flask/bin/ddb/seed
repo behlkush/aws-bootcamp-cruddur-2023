@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 with open("conversation.txt", "r") as file:
-  converstation = file.read
+  converstation = file.readlines()
 
 
 print(converstation)
