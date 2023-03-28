@@ -2,6 +2,10 @@
 
 set -e # stop if it fails at any point
 
+
+# We are looking to call this script like:
+# /bin/ddb/drop cruddur-messages prod
+
 if [ -z "$1" ]; then
   echo "No TABLE_NAME argument supplied eg ./bin/ddb/drop cruddur-messages prod "
   exit 1

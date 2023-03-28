@@ -4,62 +4,67 @@
     "dockerfile": "Dockerfile"
   },
   "features": {
-      "ghcr.io/devcontainers/features/docker-in-docker:2": {}
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {}
+  },
+  // "ghcr.io/devcontainers/features/docker-in-docker:1": {
+  //   "version": "latest",
+  //   "moby": true
+  // },
+  "forwardPorts": [
+    3000,
+    4567,
+    2000,
+    5432,
+    8000
+  ],
+  "portsAttributes": {
+    "3000": {
+      "label": "Cruddur Frontend",
+      "onAutoForward": "notify"
     },
-    // "ghcr.io/devcontainers/features/docker-in-docker:1": {
-    //   "version": "latest",
-    //   "moby": true
-    // },
-    "forwardPorts": [
-      3000,
-      4567,
-      2000,
-      8000
-    ],
-    "portsAttributes": {
-      "3000": {
-        "label": "Cruddur Frontend",
-        "onAutoForward": "notify"
-      },
-      "4567": {
-        "label": "Cruddur Backend",
-        "onAutoForward": "notify"
-      },
-      "2000": {
-        "label": "AWS X-Ray Daemon",
-        "onAutoForward": "notify"
-      },
-      "8000": {
-        "label": "DynamoDB",
-        "onAutoForward": "notify"
-      }
+    "4567": {
+      "label": "Cruddur Backend",
+      "onAutoForward": "notify"
     },
-    "customizations": {
-      "vscode": {
-        "extensions": [
-          "42Crunch.vscode-openapi",
-          "ms-azuretools.vscode-docker",
-          "ms-python.python",
-          "hashicorp.terraform",
-          "redhat.ansible",
-          "redhat.vscode-yaml",
-          "amazonwebservices.aws-toolkit-vscode"
-        ]
-      }
+    "2000": {
+      "label": "AWS X-Ray Daemon",
+      "onAutoForward": "notify"
     },
-    // "settings": {
-    // 	"terminal.integrated.profiles.linux": {
-    // 		"bash": {
-    // 			"path": "/usr/bin/bash",
-    // 			"icon": "terminal-bash"
-    // 		}
-    // 	},
-    // 	"terminal.integrated.defaultProfile.linux": "bash"
-    // },	
-    "runArgs": [
-      "--env-file",
-      "${localWorkspaceFolder}/.devcontainer/devcontainer.env"
-    ],
-    "remoteUser": "bootcamp",
-    "postAttachCommand": "cd ./frontend-react-js && npm install && cd ../backend-flask && pip install -r requirements.txt &&  sh bin/rds/update-sg-rule"
-  }
+    "5432": {
+      "label": "postgres",
+      "onAutoForward": "notify"
+    },
+    "8000": {
+      "label": "DynamoDB",
+      "onAutoForward": "notify"
+    }
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "42Crunch.vscode-openapi",
+        "ms-azuretools.vscode-docker",
+        "ms-python.python",
+        "hashicorp.terraform",
+        "redhat.ansible",
+        "redhat.vscode-yaml",
+        "amazonwebservices.aws-toolkit-vscode"
+      ]
+    }
+  },
+  // "settings": {
+  // 	"terminal.integrated.profiles.linux": {
+  // 		"bash": {
+  // 			"path": "/usr/bin/bash",
+  // 			"icon": "terminal-bash"
+  // 		}
+  // 	},
+  // 	"terminal.integrated.defaultProfile.linux": "bash"
+  // },	
+  "runArgs": [
+    "--env-file",
+    "${localWorkspaceFolder}/.devcontainer/devcontainer.env"
+  ],
+  "remoteUser": "bootcamp",
+  "postAttachCommand": "cd ./frontend-react-js && npm install && cd ../backend-flask && pip install -r requirements.txt &&  sh bin/rds/update-sg-rule"
+}
