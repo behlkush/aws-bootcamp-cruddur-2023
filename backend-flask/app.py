@@ -153,7 +153,7 @@ def data_message_groups():
 
 # Note that currently anyone passing any message group uuid can access it
 # So we do need to restrict it to the users owning that message group uuid
-@app.route("/api/messages/@<string:message_group_uuid>", methods=['GET'])
+@app.route("/api/messages/<string:message_group_uuid>", methods=['GET'])
 def data_messages(message_group_uuid):
     access_token = extract_access_token(request.headers)
     try:
@@ -215,7 +215,7 @@ def data_create_message():
 
 
 @app.route("/api/activities/home", methods=['GET'])
-@xray_recorder.capture('activities_home')
+# @xray_recorder.capture('activities_home')
 def data_home():
     access_token = extract_access_token(request.headers)
     try:
