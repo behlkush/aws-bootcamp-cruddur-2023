@@ -63,7 +63,7 @@ message_group_uuid = "5ae290ed-55d1-47a0-bc6d-fe2bc2700399"
 table_name = 'cruddur-messages'
 
 # Main Functions
-def create_message_group(client,message_group_uuid, my_user_uuid, last_message_at=None, message=None, other_user_uuid=None, other_user_display_name=None, other_user_handle=None):
+def create_message_group(client, message_group_uuid, my_user_uuid, last_message_at=None, message=None, other_user_uuid=None, other_user_display_name=None, other_user_handle=None):
   #'pk':   {'S': f"GRP#{my_user_uuid}"},
   # incidcates, the record is for Primary Key, S is for String, and f is for formatting.
   # We had decided to add GRP# while doing Data modeling to indicate that this table entry 

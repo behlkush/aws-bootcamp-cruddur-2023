@@ -23,24 +23,25 @@ aws rds create-db-instance \
   --performance-insights-retention-period 7 \
   --no-deletion-protection
 ```
+
 Then stopped the instance for now.
 
-
-## PostGres on gitpod 
+## PostGres on gitpod
 
 Come back and start docker on gitpod and that should run the PostGres container as well.
 
 ### Create a database
+
 ```
 CREATE database cruddur;
 postgres=# CREATE database cruddur;
 CREATE DATABASE
 postgres=# \l
                                  List of databases
-   Name    |  Owner   | Encoding |  Collate   |   Ctype    |   Access privileges   
+   Name    |  Owner   | Encoding |  Collate   |   Ctype    |   Access privileges
 -----------+----------+----------+------------+------------+-----------------------
- cruddur   | postgres | UTF8     | en_US.utf8 | en_US.utf8 | 
- postgres  | postgres | UTF8     | en_US.utf8 | en_US.utf8 | 
+ cruddur   | postgres | UTF8     | en_US.utf8 | en_US.utf8 |
+ postgres  | postgres | UTF8     | en_US.utf8 | en_US.utf8 |
  template0 | postgres | UTF8     | en_US.utf8 | en_US.utf8 | =c/postgres          +
            |          |          |            |            | postgres=CTc/postgres
  template1 | postgres | UTF8     | en_US.utf8 | en_US.utf8 | =c/postgres          +
@@ -51,31 +52,34 @@ postgres=# \l
 Confirm that the new db is created.
 
 ### Set up schema
+
 Next up we need to set up some tables in this database.
 
-
-
 ### UUID Generation
+
 We need a UUID extension to generate unique random user Ids.
 
 ```
 CREATE EXTENSION "uuid-ossp";
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 ```
+
 Use second one because the script might be run again and again
 
 Now to import this schema.sql into your psql - quit the prompt and then run :
+
 ```
 psql cruddur < db/schema.sql -h localhost -U postgres
 ```
 
 Ran the command
+
 ```
 gitpod /workspace/aws-bootcamp-cruddur-2023 (main) $ psql cruddur < db/schema.sql -h localhost -U postgres
 bash: db/schema.sql: No such file or directory
 gitpod /workspace/aws-bootcamp-cruddur-2023 (main) $ cd backend-flask/
 gitpod /workspace/aws-bootcamp-cruddur-2023/backend-flask (main) $ psql cruddur < db/schema.sql -h localhost -U postgres
-Password for user postgres: 
+Password for user postgres:
 CREATE EXTENSION
 ```
 
@@ -84,6 +88,7 @@ CREATE EXTENSION
 ```
 export CONNECTION_URL="postgresql://postgres:password@localhost:5432/cruddur"
 ```
+
 And then login:
 
 ```
@@ -95,11 +100,13 @@ cruddur=# \q
 ```
 
 Now set the env to persist:
+
 ```
 gp env CONNECTION_URL="postgresql://postgres:password@localhost:5432/cruddur"
 ```
 
 Now set up AWS RDS instances environment variable so that you don't forget it.
+
 ```
 export PROD_CONNECTION_URL="postgresql://postgres:DBPWD@cruddur-db-instance.ctdwflxvg5gi.ca-central-1.rds.amazonaws.com:5432/cruddur"
 gp env PROD_CONNECTION_URL="postgresql://postgres:DBPWD@cruddur-db-instance.ctdwflxvg5gi.ca-central-1.rds.amazonaws.com:5432/cruddur"
@@ -120,36 +127,41 @@ gitpod /workspace/aws-bootcamp-cruddur-2023/backend-fl
 ```
 
 Tried to drop the cruddur DB but got error:
+
 ```
-gitpod /workspace/aws-bootcamp-cruddur-2023/backend-flask (main) $ ./bin/db-drop 
+gitpod /workspace/aws-bootcamp-cruddur-2023/backend-flask (main) $ ./bin/db-drop
 ERROR:  cannot drop the currently open database
 ```
+
 Finally after editing using sed, it started working:
+
 ```
-gitpod /workspace/aws-bootcamp-cruddur-2023/backend-flask (main) $ ./bin/db-drop 
+gitpod /workspace/aws-bootcamp-cruddur-2023/backend-flask (main) $ ./bin/db-drop
 DROP DATABASE
-gitpod /workspace/aws-bootcamp-cruddur-2023/backend-flask (main) $ 
+gitpod /workspace/aws-bootcamp-cruddur-2023/backend-flask (main) $
 ```
 
 My Drop sql was still not working because i had spaces in between like this below:
+
 ```
 NO_DB_CONNECTION_URL = $(sed 's/\/cruddur//g' <<<"$CONNECTION_URL")
 ```
 
-
 #### Create database using bash:
+
 ```
-gitpod /workspace/aws-bootcamp-cruddur-2023/backend-flask (main) $ ./bin/db-create 
+gitpod /workspace/aws-bootcamp-cruddur-2023/backend-flask (main) $ ./bin/db-create
 db-create
 psql: error: connection to server at "localhost" (::1), port 5432 failed: FATAL:  database "cruddur" does not exist
-gitpod /workspace/aws-bootcamp-cruddur-2023/backend-flask (main) $ ./bin/db-create 
+gitpod /workspace/aws-bootcamp-cruddur-2023/backend-flask (main) $ ./bin/db-create
 db-create
 CREATE DATABASE
 ```
 
 ### Load Schema
 
-In db-schema-load script i added (backend-flask) below to make it work 
+In db-schema-load script i added (backend-flask) below to make it work
+
 ```
 schema_path=$(realpath .)/backend-flask/db/schema.sql
 ```
@@ -157,17 +169,17 @@ schema_path=$(realpath .)/backend-flask/db/schema.sql
 And then ran the script from base path:
 
 ```
-gitpod /workspace/aws-bootcamp-cruddur-2023 (main) $ backend-flask/bin/db-schema-load 
+gitpod /workspace/aws-bootcamp-cruddur-2023 (main) $ backend-flask/bin/db-schema-load
 db-schema-load
 backend-flask/bin/db-schema-load: line 6: /workspace/aws-bootcamp-cruddur-2023/db/schema.sql: No such file or directory
 gitpod /workspace/aws-bootcamp-cruddur-2023 (main) $ cat /workspace/aws-bootcamp-cruddur-2023/db/schema.sql
 cat: /workspace/aws-bootcamp-cruddur-2023/db/schema.sql: No such file or directory
-gitpod /workspace/aws-bootcamp-cruddur-2023 (main) $ backend-flask/bin/db-schema-load 
+gitpod /workspace/aws-bootcamp-cruddur-2023 (main) $ backend-flask/bin/db-schema-load
 db-schema-load
 CREATE EXTENSION
 ```
 
-### Next updated the db-schema-load script to use environment variabled to determing prod and also set colours in echo 
+### Next updated the db-schema-load script to use environment variabled to determing prod and also set colours in echo
 
 ```
 CYAN='\033[1;36m'
@@ -180,8 +192,8 @@ printf "${CYAN}== ${LABEL}${NO_COLOR}\n"
 
 https://www.postgresql.org/docs/current/sql-createtable.html
 
-
 Make sure that create table always passes:
+
 ```
 DROP TABLE IF EXISTS public.users;
 DROP TABLE IF EXISTS public.activities;
@@ -220,13 +232,13 @@ Type "help" for help.
 
 cruddur=# \dl
       Large objects
- ID | Owner | Description 
+ ID | Owner | Description
 ----+-------+-------------
 (0 rows)
 
 cruddur=# \dt
            List of relations
- Schema |    Name    | Type  |  Owner   
+ Schema |    Name    | Type  |  Owner
 --------+------------+-------+----------
  public | activities | table | postgres
  public | users      | table | postgres
@@ -234,6 +246,7 @@ cruddur=# \dt
 ```
 
 Add data to tables usind seed bash script and add the below in seed.sql
+
 ```
 -- this file was manually created
 INSERT INTO public.users (display_name, handle, cognito_user_id)
@@ -252,12 +265,13 @@ VALUES
 ```
 
 Updates schema.sql to include: this is to fix the error we are getting related to uuid
+
 ```
 user_uuid UUID NOT NULL,
 ```
 
-
 Check the table contents by connecting to DB using the connect bash script
+
 ```
 cruddur=# SELECT * FROM activities;
 cruddur=# \x ON
@@ -270,15 +284,15 @@ message                | This was imported as seed data!
 replies_count          | 0
 reposts_count          | 0
 likes_count            | 0
-reply_to_activity_uuid | 
+reply_to_activity_uuid |
 expires_at             | 2023-03-25 17:28:48.076099
 created_at             | 2023-03-15 17:28:48.076099
 ```
 
 you can use \x auto as well to display the table contents in readable format.
 
-
 ### Easy database set up using db-setup script
+
 ```
 #! /usr/bin/bash
 -e # stop if it fails at any point
@@ -297,7 +311,6 @@ source "$bin_path/db-schema-load"
 source "$bin_path/db-seed"
 ```
 
-
 ### Install postgres driver
 
 Drivers are needed to make it work with the underlying hardware. We are only using software here but we need to make postgres work with python.
@@ -307,9 +320,11 @@ So we are looking to install python driver for postgres
 psycopg[binary]
 psycopg[pool]
 ```
+
 The library documentation can be found here: https://www.psycopg.org/psycopg3/
 
 Next run
+
 ```
 pip install -r requirements.txt
 ```
@@ -344,12 +359,13 @@ pool = ConnectionPool(connection_url)
 ```
 
 Update docker compose to include
+
 ```
 CONNECTION_URL: ${CONNECTION_URL}
 ```
 
+# Update home.sql
 
-# Update HomeActivities.py to use psql instead of hardcoding the return values
 ```
 SELECT
         activities.uuid,
@@ -371,12 +387,12 @@ Also updated db.py to fix the traps.
 
 ##### The SQL query is finally working and home activities is now showing data by fetching it from the psql database
 
-
 ## Connect to AWS RDS instance.
 
 Update the security group IDs because they will be needed everytime gitpod restarts. Gitpod will have a new public IP so SG needs to be updated everytime.
 
 Get public IP of gitpod:
+
 ```
 GITPOD_IP=$(curl ifconfig.me)
 ```
@@ -389,6 +405,7 @@ gp env DB_SG_RULE_ID="sgr-02fdf9dac5ce5c837"
 ```
 
 Add the new rule:
+
 ```
 aws ec2 modify-security-group-rules \
     --group-id $DB_SG_ID \
@@ -402,13 +419,14 @@ Add above code in a script: rds-sg-rule-update and then make it run everytime by
       export GITPOD_IP=$(curl ifconfig.me)
       source "$THEIA_WORKSPACE_ROOT/backend-flask/bin/rds-update-sg-rule"
 ```
-Note: I have added the bin to correct path already.
 
+Note: I have added the bin to correct path already.
 
 # Lambda Post Confirmaton
 
 - Created a Lambda function with python 3.8 and called it cruddur-post-confirmation
-Code for function
+  Code for function
+
 ```
 import json
 import psycopg2
@@ -431,22 +449,22 @@ def lambda_handler(event, context):
 
         sql = f"""
         INSERT INTO users (
-        display_name, 
+        display_name,
         email,
-        handle, 
-        cognito_user_id) 
+        handle,
+        cognito_user_id)
         VALUES(
-        {user_display_name}, 
-        {user_email}, 
+        {user_display_name},
+        {user_email},
         {user_handle},
         {user_cognito_id})
         """
         cur.execute(sql)
-        conn.commit() 
+        conn.commit()
 
     except (Exception, psycopg2.DatabaseError) as error:
         print(error)
-        
+
     finally:
         if conn is not None:
             cur.close()
@@ -455,9 +473,11 @@ def lambda_handler(event, context):
 
     return event
 ```
+
 Add CONNECTION_URL environment variable under configuration.
 
 Next added a layer:
+
 ```
 arn:aws:lambda:ca-central-1:898466741470:layer:psycopg2-py38:1
 
@@ -484,40 +504,41 @@ AWSLambdaVPCAccessExecutionRole
 ```
 
 # Taste of Success
-cruddur=> select * from users;
--[ RECORD 1 ]---+-------------------------------------
-uuid            | ecf4bf20-ab98-4bc5-8ddd-e356322bffd1
-display_name    | kush behl
-email           | kushbehl@gmail.com
-handle          | kushbehl
-cognito_user_id | 42cac012-4ec3-4001-b857-b44ddfb8cd54
-created_at      | 2023-03-17 20:34:48.925093
--[ RECORD 2 ]---+-------------------------------------
-uuid            | 8e73a490-1b69-4564-bd9f-9c187a8a9057
-display_name    | kiaan behl
-email           | behlkiaan@gmail.com
-handle          | owensound
-cognito_user_id | 4b0b8699-4a3c-460a-9fb7-7546d2287064
-created_at      | 2023-03-17 20:39:32.308119
 
+cruddur=> select \* from users; -[ RECORD 1 ]---+-------------------------------------
+uuid | ecf4bf20-ab98-4bc5-8ddd-e356322bffd1
+display_name | kush behl
+email | kushbehl@gmail.com
+handle | kushbehl
+cognito_user_id | 42cac012-4ec3-4001-b857-b44ddfb8cd54
+created_at | 2023-03-17 20:34:48.925093 -[ RECORD 2 ]---+-------------------------------------
+uuid | 8e73a490-1b69-4564-bd9f-9c187a8a9057
+display_name | kiaan behl
+email | behlkiaan@gmail.com
+handle | owensound
+cognito_user_id | 4b0b8699-4a3c-460a-9fb7-7546d2287064
+created_at | 2023-03-17 20:39:32.308119
 
 # Create activity changes
+
 - Modularized DB.py
 - Added SQL / Activities folder and added mulitple SQL query files there
 - Updated home activities and create activity service to use this templatized version of DB with the psycopg library
 
-
-To make crud work was a really big challenge for me. 
+To make crud work was a really big challenge for me.
 
 #### Week 4 Roadblocks faced:
-- I ran out of gitpod credits 
+
+- I ran out of gitpod credits
 - Set up a github codespaces workspace with all the settings, devcontainers stuff after following Andrew's video and got it working but crud functionality was still not working. I tried to fix it using all my effort but they all went in vain. I doubted on using and finishing credits on codespaces as well. My print and debug logs were also not showing up in codespace.
 - That is when i decided to follow Jason's approach of setting up the dev containers locally. Spent in another 6-8 hours setting up everything locally and i will come up with the full write up on how I was able to set up everything locally. It involved more than the documented efforts here: https://www.linuxtek.ca/2023/03/10/aws-cloud-project-bootcamp-solving-the-cde-problem/ This is because every case is a different. The difference in my case was that i was setting everything on mac. So i will do a write up for setting the code in dev containers using mac.
 - Finally after setting up and after getting the cruddur to a working state, i started working on finding the cause of mulitple errors that i was facing.
-- There were errors 
+- There were errors
+
 1. Error -- Can't find activities.sql file -- now it took hours to find that i had a type in the activities.sql file and as missing an I.
-2. UUID is a Not null field and the create.sql was throwing error. 
-- After deubugging for hours, i found the root cause. The handle i was passing from app.py was andrewbrown and i had no user named andrewbrown in my RDS. 
+2. UUID is a Not null field and the create.sql was throwing error.
+
+- After deubugging for hours, i found the root cause. The handle i was passing from app.py was andrewbrown and i had no user named andrewbrown in my RDS.
 - I fixed my code to change the handle to ownensound which fixed that issue
 
 Everything in week4 is now working and here is the proof:
@@ -532,7 +553,7 @@ Type "help" for help.
 
 cruddur=> \dt
              List of relations
- Schema |    Name    | Type  |    Owner    
+ Schema |    Name    | Type  |    Owner
 --------+------------+-------+-------------
  public | activities | table | cruddurroot
  public | users      | table | cruddurroot
@@ -548,25 +569,25 @@ message                | asdfasdfsda
 replies_count          | 0
 reposts_count          | 0
 likes_count            | 0
-reply_to_activity_uuid | 
+reply_to_activity_uuid |
 expires_at             | 2023-03-28 15:15:15.948576
 created_at             | 2023-03-21 15:15:16.158457
 
 ```
 
-
 # Issues
-1. psql command not found even when psql container is loaded and running. Seems to be a path issue.  - It was not a path issue. I checked .gitpod.yml and it had the psql entry to install and configure psql.
+
+1. psql command not found even when psql container is loaded and running. Seems to be a path issue. - It was not a path issue. I checked .gitpod.yml and it had the psql entry to install and configure psql.
 
 I hardcoded the CONNECTION_URL value in docker-compose.yml and that fixed the issue.
-
 
 2. Another issue i faced is while trying to execute permissions on SG rule for AWS RDS. My code was not executing correctly and GITPOD_IP was not getting exported. It was because of an identation issue. On fixing the identation in .gitpod.yml file it worked.
 
 3. Another issue i faced is that the PROD_CONNECTION_URL was not set to have the correct username. I fixed that and it started connecting to AWS RDS.
 
 4. Spent hours fixing this one. I was not able to see users in the actual cruddur AWS RDS instance even after fixing all errors in the post confirmation lamda. However, was able to fix it after persisting and matching the display name setting and adding email in the db schema and loading it.
-i had double quotes instead of single quotes below:
+   i had double quotes instead of single quotes below:
+
 ```
 VALUES('{user_display_name}', '{user_email}', '{user_handle}', '{user_cognito_id}')
 ```
