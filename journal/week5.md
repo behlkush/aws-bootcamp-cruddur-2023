@@ -731,6 +731,211 @@ export default function ActivityForm(props) {
 }
 ```
 
+# Implementing DDB Streams
+
+#### Create table in prod Dynamo db
+```
+bootcamp@e7dca389ea0e:/workspaces/aws-bootcamp-cruddur-2023/backend-flask/bin/ddb$ ./schema-load prod
+{'TableDescription': {'AttributeDefinitions': [{'AttributeName': 'pk', 'AttributeType': 'S'}, {'AttributeName': 'sk', 'AttributeType': 'S'}], 'TableName': 'cruddur-messages', 'KeySchema': [{'AttributeName': 'pk', 'KeyType': 'HASH'}, {'AttributeName': 'sk', 'KeyType': 'RANGE'}], 'TableStatus': 'CREATING', 'CreationDateTime': datetime.datetime(2023, 3, 30, 20, 42, 47, 638000, tzinfo=tzlocal()), 'ProvisionedThroughput': {'NumberOfDecreasesToday': 0, 'ReadCapacityUnits': 5, 'WriteCapacityUnits': 5}, 'TableSizeBytes': 0, 'ItemCount': 0, 'TableArn': 'arn:aws:dynamodb:ca-central-1:342196396576:table/cruddur-messages', 'TableId': '02edc70a-85b0-486b-9bf6-4ae63b9694d8', 'DeletionProtectionEnabled': False}, 'ResponseMetadata': {'RequestId': '4DNPF5MM37MV82OUVF9IK5K6KRVV4KQNSO5AEMVJF66Q9ASUAAJG', 'HTTPStatusCode': 200, 'HTTPHeaders': {'server': 'Server', 'date': 'Thu, 30 Mar 2023 20:42:47 GMT', 'content-type': 'application/x-amz-json-1.0', 'content-length': '613', 'connection': 'keep-alive', 'x-amzn-requestid': '4DNPF5MM37MV82OUVF9IK5K6KRVV4KQNSO5AEMVJF66Q9ASUAAJG', 'x-amz-crc32': '949097083'}, 'RetryAttempts': 0}}
+bootcamp@e7dca389ea0e:/workspaces/aws-bootcamp-cruddur-2023/backend-flask/bin/ddb$ 
+```
+
+# The Boundaries of DynamoDB
+- When you write a query you have provide a Primary Key (equality) eg. pk = 'andrew'
+- Are you allowed to "update" the Hash and Range?
+  - No, whenever you change a key (simple or composite) eg. pk or sk you have to create a new item.
+    you have to delete the old one
+- Key condition expressions for query only for RANGE, HASH is only equality
+- Don't create UUID for entity if you don't have an access pattern for it
+
+
+# DynamoDB Stream trigger to update message groups
+
+#### Create Lambda function with below code:
+```
+import json
+import boto3
+from boto3.dynamodb.conditions import Key, Attr
+
+dynamodb = boto3.resource(
+ 'dynamodb',
+ region_name='ca-central-1',
+ endpoint_url="http://dynamodb.ca-central-1.amazonaws.com"
+)
+
+def lambda_handler(event, context):
+  pk = event['Records'][0]['dynamodb']['Keys']['pk']['S']
+  sk = event['Records'][0]['dynamodb']['Keys']['sk']['S']
+  if pk.startswith('MSG#'):
+    group_uuid = pk.replace("MSG#","")
+    message = event['Records'][0]['dynamodb']['NewImage']['message']['S']
+    print("GRUP ===>",group_uuid,message)
+    
+    table_name = 'cruddur-messages'
+    index_name = 'message-group-sk-index'
+    table = dynamodb.Table(table_name)
+    data = table.query(
+      IndexName=index_name,
+      KeyConditionExpression=Key('message_group_uuid').eq(group_uuid)
+    )
+    print("RESP ===>",data['Items'])
+    
+    # recreate the message group rows with new SK value
+    for i in data['Items']:
+      delete_item = table.delete_item(Key={'pk': i['pk'], 'sk': i['sk']})
+      print("DELETE ===>",delete_item)
+      
+      response = table.put_item(
+        Item={
+          'pk': i['pk'],
+          'sk': sk,
+          'message_group_uuid':i['message_group_uuid'],
+          'message':message,
+          'user_display_name': i['user_display_name'],
+          'user_handle': i['user_handle'],
+          'user_uuid': i['user_uuid']
+        }
+      )
+      print("CREATE ===>",response)
+```
+- Need to give this lambda permission to invoke dynamo db streams: AWSLambdaInvocation-DynamoDB
+
+- Next add the lambda as trigger on the stream
+
+#### Create a global secondary index - GSI
+Updated schema-load to create GSI and re created Prod DDB
+```
+#!/usr/bin/env python3
+
+import boto3
+import sys
+
+attrs = {
+  'endpoint_url': 'http://localhost:8000'
+}
+
+if len(sys.argv) == 2:
+  if "prod" in sys.argv[1]:
+    attrs = {}
+
+ddb = boto3.client('dynamodb',**attrs)
+
+table_name = 'cruddur-messages'
+
+
+response = ddb.create_table(
+  TableName=table_name,
+  AttributeDefinitions=[
+    {
+      'AttributeName': 'message_group_uuid',
+      'AttributeType': 'S'
+    },
+    {
+      'AttributeName': 'pk',
+      'AttributeType': 'S'
+    },
+    {
+      'AttributeName': 'sk',
+      'AttributeType': 'S'
+    },
+  ],
+  KeySchema=[
+    {
+      'AttributeName': 'pk',
+      'KeyType': 'HASH'
+    },
+    {
+      'AttributeName': 'sk',
+      'KeyType': 'RANGE'
+    },
+  ],
+  GlobalSecondaryIndexes= [{
+    'IndexName':'message-group-sk-index',
+    'KeySchema':[{
+      'AttributeName': 'message_group_uuid',
+      'KeyType': 'HASH'
+    },{
+      'AttributeName': 'sk',
+      'KeyType': 'RANGE'
+    }],
+    'Projection': {
+      'ProjectionType': 'ALL'
+    },
+    'ProvisionedThroughput': {
+      'ReadCapacityUnits': 5,
+      'WriteCapacityUnits': 5
+    },
+  }],
+  BillingMode='PROVISIONED',
+  ProvisionedThroughput={
+      'ReadCapacityUnits': 5,
+      'WriteCapacityUnits': 5
+  }
+)
+
+print(response)
+```
+
+### Start making use of the new DDB streams and Lambda trigger
+- Comment out AWS_ENDPOINT_URL in docker-compose.yml
+- Created a new message by going to URL: http://localhost:3000/messages/new/behlkiaan
+- Message posted successfully  
+- Back on the cruddur-messaging-stream lambda invocation, clicked CloudWatch logs and encountered below error:
+```
+[ERROR] ClientError: An error occurred (AccessDeniedException) when calling the Query operation: User: arn:aws:sts::342196396576:assumed-role/cruddur-messaging-stream-role-gge0anso/cruddur-messaging-stream is not authorized to perform: dynamodb:Query on resource: arn:aws:dynamodb:ca-central-1:342196396576:table/cruddur-messages/index/message-group-sk-index because no identity-based policy allows the dynamodb:Query action
+Traceback (most recent call last):
+  File "/var/task/lambda_function.py", line 22, in lambda_handler
+    data = table.query(
+  File "/var/runtime/boto3/resources/factory.py", line 520, in do_action
+    response = action(self, *args, **kwargs)
+  File "/var/runtime/boto3/resources/action.py", line 83, in __call__
+    response = getattr(parent.meta.client, operation_name)(*args, **params)
+  File "/var/runtime/botocore/client.py", line 391, in _api_call
+    return self._make_api_call(operation_name, kwargs)
+  File "/var/runtime/botocore/client.py", line 719, in _make_api_call
+    raise error_class(parsed_response, operation_name)
+```
+
+- to fix above error we added below policy to lambda role (AWS managed policy)
+```
+AmazonDynamoDBFullAccess
+```
+- That did not fix lambda errors so we created an inline policy to that lambda role:
+```
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "VisualEditor0",
+            "Effect": "Allow",
+            "Action": [
+                "dynamodb:PutItem",
+                "dynamodb:DeleteItem",
+                "dynamodb:Query"
+            ],
+            "Resource": [
+                "arn:aws:dynamodb:ca-central-1:342196396576:table/cruddur-messages/index/message-group-sk-index",
+                "arn:aws:dynamodb:ca-central-1:342196396576:table/cruddur-messages"
+            ]
+        }
+    ]
+}
+```
+- After fixing this another issue started coming for REMOVE event type on the lambda
+- The issue was coming because of something called a REMOVE event that was throwing exception as it didn't have a key
+called NewImage in the events:
+```
+message = event['Records'][0]['dynamodb']['NewImage']['message']['S']
+```
+- To fix this we updated the lambda with
+```
+  eventName = event['Records'][0]['eventName']
+  if (eventName == 'REMOVE'):
+    print("skip REMOVE event")
+    return
+```
+
+
 # Issues faced:
 - Backend flask app started giving error all of a sudden when it wouldn't connect to the psql local db
   - Found out that i had CONNECTION_URL set as localhost:5432 - it used to work like that but then i changed it to db:5432 so that backend cound connect
