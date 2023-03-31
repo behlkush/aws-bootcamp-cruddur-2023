@@ -638,7 +638,7 @@ export default function MessageGroupNewItem(props) {
     <Link className='message_group_item active' to={`/messages/new/` + props.user.handle}>
       <div className='message_group_avatar'></div>
       <div className='message_content'>
-        <div classsName='message_group_meta'>
+        <div className='message_group_meta'>
           <div className='message_group_identity'>
             <div className='display_name'>{props.user.display_name}</div>
             <div className="handle">@{props.user.handle}</div>
@@ -950,3 +950,29 @@ message = event['Records'][0]['dynamodb']['NewImage']['message']['S']
     ```
        docker system prune
     ```
+
+
+# Homework Summary
+Followed along with videos and was able to get the dynamo db working.
+- Has been the most challenging week full of issues
+
+Things that I still don't fully understand and will watch the videos again for:
+- All the access patterns - Revisit again and understand the implementation of each
+- Why did we get rid of REMOVE events in the lambda - I know the remove event didn't have the key: NewImage but is it okay to skip those?
+
+Things I learned:
+- AWS_ENDPOINT_URL is an absolute essential environment variable if dynamo db is running local
+- I can reach out to my dynamodb using a VPC endpoint: com.amazonaws.ca-central-1.dynamodb and then by calling boto3.client('dynamodb', **attrs), all from within my python library code
+- How to create an inline policy easily using the Visual Editor, which is now a part of AWS console
+- There is a difference in how Dev Containers treat environment variables, the container doesn't recognize localhost keyword when used for psql, but it does recognize what docker-compose.yml exposes. The normal terminal in dev contiainer doesn't understand the db with psql and to connect to psql locally from terminal, we need to use localhost.
+
+# Issues faced:
+- The backend flask app started giving errors all of a sudden when it wouldn't connect to the psql local db
+  - Found out that I had CONNECTION_URL set as localhost:5432 - it used to work like that but then I changed it to db:5432 so that the backend could connect
+    to the local db successfully
+- The message groups tab wouldn't load up, no matter what I did, i was getting an exception. 
+  - After tons of debugging and effort I found out that it was due the environment variable: AWS_ENDPOINT_URL not being set to point to dynamodb-local.
+    So ddb.py client() calls were failing and giving back exceptions
+
+- Started getting errors related to disk space being full so unable to launch dev container
+  - resolved by running: docker system prune
