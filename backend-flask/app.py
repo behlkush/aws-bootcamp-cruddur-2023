@@ -45,9 +45,10 @@ from lib.cognito_jwt_token import CognitoJwtToken, extract_access_token, TokenVe
 LOGGER = logging.getLogger(__name__)
 LOGGER.setLevel(logging.DEBUG)
 console_handler = logging.StreamHandler()
-cw_handler = watchtower.CloudWatchLogHandler(log_group='cruddur')
+# Disable cloudwatch logging group cruddur
+# cw_handler = watchtower.CloudWatchLogHandler(log_group='cruddur')
 LOGGER.addHandler(console_handler)
-LOGGER.addHandler(cw_handler)
+# LOGGER.addHandler(cw_handler)
 
 # LOGGER.info("app.py test log")
 
@@ -97,9 +98,9 @@ RequestsInstrumentor().instrument()
 
 
 # X-RAY Initialization
-xray_url = os.getenv("AWS_XRAY_URL")
-xray_recorder.configure(service='backend-flask', dynamic_naming=xray_url)
-XRayMiddleware(app, xray_recorder)
+# xray_url = os.getenv("AWS_XRAY_URL")
+# xray_recorder.configure(service='backend-flask', dynamic_naming=xray_url)
+# XRayMiddleware(app, xray_recorder)
 
 frontend = os.getenv('FRONTEND_URL')
 backend = os.getenv('BACKEND_URL')
@@ -131,6 +132,10 @@ def after_request(response):
 #     rollbar.report_message('Hello World!', 'warning')
 #     return "Hello World!"
 
+# Implementing healthcheck for backend flask app
+@app.route('/api/health-check')
+def health_check():
+  return {'success': True}, 200
 
 @app.route("/api/message_groups", methods=['GET'])
 def data_message_groups():
