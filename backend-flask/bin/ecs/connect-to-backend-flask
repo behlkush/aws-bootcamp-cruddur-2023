@@ -5,13 +5,8 @@ if [ -z "$1" ]; then
   exit 1
 fi
 
-if [ -z "$2" ]; then
-  echo "No container name name argument supplied eg ./bin/ecs/connect-to-service 56345d4a03f041d890ab489be9f288e5 backend-flask"
-  exit 1
-fi
-
 TASK_ID=$1
-CONTAINER_NAME=$2
+CONTAINER_NAME=backend-flask
 
 aws ecs execute-command  \
 --region $AWS_DEFAULT_REGION \

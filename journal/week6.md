@@ -1,6 +1,6 @@
 # Week 6 — Deploying Containers
 
-# Test RDS Connection 
+# Test RDS Connection
 
 ```
 #!/usr/bin/env python3
@@ -23,7 +23,9 @@ finally:
 ```
 
 # Next implement a healthcheck for the flask app
+
 Add the following to the app.py in flask backend:
+
 ```
 @app.route('/api/health-check')
 def health_check():
@@ -31,6 +33,7 @@ def health_check():
 ```
 
 - Next we create a new bash script bin/flask/health-check
+
 ```
 #!/usr/bin/env python3
 
@@ -51,19 +54,24 @@ except Exception as e:
   print(e)
   exit(1) # false
 ```
+
 Note that we could have just gone ahead and used CURL for this but that would require
 our continer to have CURL / WGET install. Remember to keep the container minimal.
 Don't packet network utils in your containers.
 
 # Create CloudWatch Log Group
+
 - Create a cloudwatch log group called cruddur-fargate-cluster with a retention period set to 1 day
+
 ```
 aws logs create-log-group --log-group-name /cruddur-fargate-cluster
 aws logs put-retention-policy --log-group-name /cruddur-fargate-cluster --retention-in-days 1
 ```
+
 - Log in to AWS Console and open cloud watch to verify group is created
 
 # Create ECS Cluster
+
 ```
 aws ecs create-cluster \
 --cluster-name cruddur \
@@ -72,6 +80,7 @@ aws ecs create-cluster \
 
 - Got An error occurred (ServerException) when calling the CreateCluster operation (reached max retries: 2): Service Unavailable. Please try again later.
 - On second try it ran successfully with result below:
+
 ```
 {
     "cluster": {
@@ -110,6 +119,7 @@ aws ecs create-cluster \
 ## Create our docker containers now - We can store the images in ECR
 
 #### Create my first repository through CLI
+
 ```
 aws ecr create-repository \
   --repository-name cruddur-python \
@@ -117,23 +127,28 @@ aws ecr create-repository \
 ```
 
 #### Next log in to ECR
+
 ```
 aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username \
 AWS --password-stdin "$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com"
 ```
+
 - Output -- Login Succeeded
 - Now that we are logged in - we can push the containers in our ECR
 
 #### Set URL -- This requires us to pass the base URI of our ECR
+
 ```
 export ECR_PYTHON_URL="$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/cruddur-python"
 echo $ECR_PYTHON_URL
 ```
+
 - 342196396576.dkr.ecr.ca-central-1.amazonaws.com/cruddur-python -- Matches my URI for ECR
 
 #### Pull the docker image for python
+
 - So what we are looking to do is, instead of pulling in the python image everytime from docker hub,
-instead we are pulling it once and then we will push it into our ECR which is our private repo.
+  instead we are pulling it once and then we will push it into our ECR which is our private repo.
 - Going forward we won't be then dependent on Dockerhub anymore for python image
 
 ```
@@ -141,49 +156,55 @@ docker pull python:3.10-slim-buster
 ```
 
 - output - Status: Downloaded newer image for python:3.10-slim-buster
-docker.io/library/python:3.10-slim-buster
-
+  docker.io/library/python:3.10-slim-buster
 
 #### Tag image
+
 ```
 docker tag python:3.10-slim-buster $ECR_PYTHON_URL:3.10-slim-buster
 ```
 
 #### Push image
+
 ```
 docker push $ECR_PYTHON_URL:3.10-slim-buster
 ```
 
 - Output:
+
 ```
-128cd062b35d: Pushed 
-44ae7921fd10: Pushed 
-075372db15c2: Pushed 
-d1a969d0e2e5: Pushed 
-c9182c130984: Pushed 
+128cd062b35d: Pushed
+44ae7921fd10: Pushed
+075372db15c2: Pushed
+d1a969d0e2e5: Pushed
+c9182c130984: Pushed
 3.10-slim-buster: digest: sha256:31827b60ef2becea7b6b017f309c57062f7b3f37ad309eb57e9ed20411690c01 size: 1370
 ```
 
 #### Update backend Dockerfile to use the ECR image
+
 ```
 FROM 342196396576.dkr.ecr.ca-central-1.amazonaws.com/cruddur-python:3.10-slim-buster
 ```
 
 #### Check if the image gets pulled
+
 ```
 docker compose up backend-flask db
 ```
 
 Then check the API URL: http://localhost:4567/api/health-check
+
 ```
 {
   "success": true
 }
 ```
+
 - So our health check is returning true
 
-
 ### Turn on debugging in FLASK through Dockerfile
+
 ```
 ENV FLASK_DEBUG=1
 ```
@@ -191,45 +212,54 @@ ENV FLASK_DEBUG=1
 # Next push the FLASK image to ECR
 
 #### Create a new repo for flask
+
 ```
 aws ecr create-repository \
   --repository-name backend-flask \
   --image-tag-mutability MUTABLE
 ```
+
 - Next set the URL
+
 ```
 export ECR_BACKEND_FLASK_URL="$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/backend-flask"
 echo $ECR_BACKEND_FLASK_URL
 ```
 
 #### Build the flask image
+
 ```
 docker build -t backend-flask .
 ```
 
 #### Tag it to latest
+
 ```
 docker tag backend-flask:latest $ECR_BACKEND_FLASK_URL:latest
 ```
 
 #### Push image
+
 ```
 docker push $ECR_BACKEND_FLASK_URL:latest
 ```
 
 - Do some debugging to make sure the container image is usable
 
-
 # Before created a Task definition in ECS, we first need to create roles
+
 - Create Task and Exection Roles for Task Defintion
 
 #### Create ExecutionRole
+
 ```
 aws iam create-role \
     --role-name CruddurServiceExecutionRole \
     --assume-role-policy-document file://aws/policies/service-execution-policy.json
 ```
+
 - This is of course failing and giving error:
+
 ```
 An error occurred (MalformedPolicyDocument) when calling the CreateRole operation: Has prohibited field Resource
 ```
@@ -237,10 +267,11 @@ An error occurred (MalformedPolicyDocument) when calling the CreateRole operatio
 - We need to create parameters in parameter source because the resource mentioned in policy json doesn't exist yet.
 
 ### Parameters creation in Parameter store
+
 - Passing Senstive Data to Task Defintion
-Reference links:
-https://docs.aws.amazon.com/AmazonECS/latest/developerguide/specifying-sensitive-data.html 
-https://docs.aws.amazon.com/AmazonECS/latest/developerguide/secrets-envvar-ssm-paramstore.html
+  Reference links:
+  https://docs.aws.amazon.com/AmazonECS/latest/developerguide/specifying-sensitive-data.html
+  https://docs.aws.amazon.com/AmazonECS/latest/developerguide/secrets-envvar-ssm-paramstore.html
 
 ```
 aws ssm put-parameter --type "SecureString" --name "/cruddur/backend-flask/AWS_ACCESS_KEY_ID" --value $AWS_ACCESS_KEY_ID
@@ -249,6 +280,7 @@ aws ssm put-parameter --type "SecureString" --name "/cruddur/backend-flask/CONNE
 aws ssm put-parameter --type "SecureString" --name "/cruddur/backend-flask/ROLLBAR_ACCESS_TOKEN" --value $ROLLBAR_ACCESS_TOKEN
 aws ssm put-parameter --type "SecureString" --name "/cruddur/backend-flask/OTEL_EXPORTER_OTLP_HEADERS" --value "x-honeycomb-team=$HONEYCOMB_API_KEY"
 ```
+
 - The issue was that the policies need to be separated into execution and assume role policies.
 
 ```
@@ -258,6 +290,7 @@ aws iam create-role \
 ```
 
 - policy created now attach the permissions
+
 ```
 aws iam put-role-policy \
   --policy-name CruddurServiceExecutionPolicy \
@@ -285,6 +318,7 @@ aws iam create-role \
 ```
 
 ##### Now put role policy
+
 ```
 aws iam put-role-policy \
   --policy-name SSMAccessPolicy \
@@ -304,9 +338,10 @@ aws iam put-role-policy \
 }
 "
 ```
+
 - Note that the trailing double quotes are required
 
-#### Attache the role to policy
+#### Attach the role to policy
 
 ```
 aws iam attach-role-policy --policy-arn arn:aws:iam::aws:policy/CloudWatchFullAccess --role-name CruddurTaskRole
@@ -314,7 +349,9 @@ aws iam attach-role-policy --policy-arn arn:aws:iam::aws:policy/AWSXRayDaemonWri
 ```
 
 ### Now we can come back and create the task definition for our ECS cluster
+
 - Created a json file with all parameters required to create the task definition under: aws/task-definitions/backend-flask.json
+
 ```
 {
   "family": "backend-flask",
@@ -415,11 +452,13 @@ aws iam attach-role-policy --policy-arn arn:aws:iam::aws:policy/AWSXRayDaemonWri
 ```
 
 # Register Task Defintion
+
 ```
 aws ecs register-task-definition --cli-input-json file://aws/task-definitions/backend-flask.json
 ```
 
 ### Set Default VPC
+
 ```
 export DEFAULT_VPC_ID=$(aws ec2 describe-vpcs \
 --filters "Name=isDefault, Values=true" \
@@ -428,6 +467,7 @@ export DEFAULT_VPC_ID=$(aws ec2 describe-vpcs \
 ```
 
 # Set ECS task security group -- Create Security Group
+
 ```
 export CRUD_SERVICE_SG=$(aws ec2 create-security-group \
   --group-name "crud-srv-sg" \
@@ -438,6 +478,7 @@ echo $CRUD_SERVICE_SG
 ```
 
 # Authorize security group to allow traffic inbound
+
 ```
 aws ec2 authorize-security-group-ingress \
   --group-id $CRUD_SERVICE_SG \
@@ -447,12 +488,13 @@ aws ec2 authorize-security-group-ingress \
 ```
 
 # Add new role to the policy: CruddurServiceExecutionPolicy
+
 - Once we tried to launch a task it errorred out for a role that is required
 - GetAuthorizationToken - added to the policy
 - next i added cloudwatchfullaccess policy also added
 
-
 #### Added more actions to: CruddurServiceExecutionPolicy
+
 ```
 {
     "Version": "2012-10-17",
@@ -484,6 +526,7 @@ aws ec2 authorize-security-group-ingress \
 ```
 
 # Get default subnet IDs
+
 ```
 export DEFAULT_SUBNET_IDS=$(aws ec2 describe-subnets  \
  --filters Name=vpc-id,Values=$DEFAULT_VPC_ID \
@@ -495,6 +538,7 @@ echo $DEFAULT_SUBNET_IDS
 - Returns back: subnet-04ab9732898672d8e,subnet-0f2be29ffefe70df5,subnet-0eb17d2423d58d9ae
 
 # Create service-backend-flask.json
+
 ```
 {
   "cluster": "cruddur",
@@ -537,27 +581,32 @@ echo $DEFAULT_SUBNET_IDS
 ```
 
 # Create the service from CLI
+
 #### Backend service
+
 ```
 aws ecs create-service --cli-input-json file://aws/json/service-backend-flask.json
 ```
 
 # Connect to instances via sessions manager
+
 https://docs.aws.amazon.com/systems-manager/latest/userguide/session-manager-working-with-install-plugin.html#install-plugin-linux https://docs.aws.amazon.com/systems-manager/latest/userguide/session-manager-working-with-install-plugin.html#install-plugin-verify
 
 Install for Ubuntu
+
 ```
 curl "https://s3.amazonaws.com/session-manager-downloads/plugin/latest/ubuntu_64bit/session-manager-plugin.deb" -o "session-manager-plugin.deb"
 sudo dpkg -i session-manager-plugin.deb
 ```
 
 #### Verify session manager is working
+
 ```
 session-manager-plugin
 ```
 
-
 # Connect to the container
+
 ```
 aws ecs execute-command  \
 --region $AWS_DEFAULT_REGION \
@@ -569,22 +618,25 @@ aws ecs execute-command  \
 ```
 
 - **Connected successfully**
+
 ```
 The Session Manager plugin was installed successfully. Use the AWS CLI to start a session.
 
 Starting session with SessionId: ecs-execute-command-0ee49300851f91762
-root@ip-172-31-1-131:/backend-flask# 
+root@ip-172-31-1-131:/backend-flask#
 ```
 
-
 # ECS Service and task launched successfully - now open it
+
 not opening using http://35.183.118.156:4567/
 
 **Can be a security group issue**
+
 - Updated SG inbound rule to accept TCP on 4567
 
 Visit: http://35.183.118.156:4567/api/health-check
 And it returned success
+
 ```
 {
   "success": true
@@ -592,12 +644,14 @@ And it returned success
 ```
 
 # Connect Container to RDS
+
 - We try to visit /api/acitivites/home but it didn't work.
-- this is because backend contianer doesn't have access to RDS via security group. So RDS's SG needs to be updated to allow that 
-in bound connection
+- this is because backend contianer doesn't have access to RDS via security group. So RDS's SG needs to be updated to allow that
+  in bound connection
 
 - RDS SG is the default one so edit that
 - Once i added SG of ECS to RDS Group, api/activities/home is now reachable
+
 ```
 [
   {
@@ -648,20 +702,26 @@ in bound connection
 - Back on the ALB creation screen, select the SG newly created for ALB
 - Next step is to create a target group -- we wont be adding any resources to the target groups yet
 - Select IP Addresses as target group
+
   - Entered other values for health check and port as 4567
   - cruddur-backend-flask-tg created
 
-- Next create another target group for frontend-react-js - cruddur-frontend-react-js 
+- Next create another target group for frontend-react-js - cruddur-frontend-react-js
+
   - this one listens on 3000 port
 
 - cruddur-alb -- successfully created
 
 # Create the ECS service using ALB
+
 - To generate a skeleton:
+
 ```
 aws ecs create-service --generate-cli-skeleton
 ```
--  Update the service-backend-flask.json with ALB details
+
+- Update the service-backend-flask.json with ALB details
+
 ```
   "loadBalancers": [
     {
@@ -673,24 +733,26 @@ aws ecs create-service --generate-cli-skeleton
 ```
 
 - Create the service again with ALB settings in place
+
 ```
 aws ecs create-service --cli-input-json file://aws/json/service-backend-flask.json
 ```
 
 #### Update ALB security group : sg-07e9133df7d8c3f4b - cruddur-alb-sg
+
 - Add inbound traffic for port 4567
 - Add inbound traffic for port 3000
-
 
 - Next visit: http://cruddur-alb-1705497311.ca-central-1.elb.amazonaws.com:4567/api/activities/home and it worked
 
 #### Turn on ALB Logging
+
 - Go into the attributes section and first create a new s3 bucket: cruddur-alb-access-logs-owen
   - Note that the bucket currently has public access
 - Select the bucket location to store access logs back in ALB attributes.
 
 - We need to attach a bucket policy so that the ALB can access S3 bucket
-https://docs.aws.amazon.com/elasticloadbalancing/latest/application/enable-access-logging.html
+  https://docs.aws.amazon.com/elasticloadbalancing/latest/application/enable-access-logging.html
 
 ```
 {
@@ -707,11 +769,13 @@ https://docs.aws.amazon.com/elasticloadbalancing/latest/application/enable-acces
   ]
 }
 ```
+
 - The attribute changes were saved after adding above bucket policy
 
-
 # Frontend ECS service
+
 - Createa json: frontent-react-js.json for creating frontend service:
+
 ```
 {
   "family": "frontend-react-js",
@@ -720,8 +784,8 @@ https://docs.aws.amazon.com/elasticloadbalancing/latest/application/enable-acces
   "networkMode": "awsvpc",
   "cpu": "256",
   "memory": "512",
-  "requiresCompatibilities": [ 
-    "FARGATE" 
+  "requiresCompatibilities": [
+    "FARGATE"
   ],
   "containerDefinitions": [
     {
@@ -732,7 +796,7 @@ https://docs.aws.amazon.com/elasticloadbalancing/latest/application/enable-acces
         {
           "name": "frontend-react-js",
           "containerPort": 3000,
-          "protocol": "tcp", 
+          "protocol": "tcp",
           "appProtocol": "http"
         }
       ],
@@ -750,16 +814,268 @@ https://docs.aws.amazon.com/elasticloadbalancing/latest/application/enable-acces
 }
 ```
 
+**Gitignore file updated to exclude the build folder**
 
+- Next i ran npm run build to build the front end contianer but it errored out giving:
 
+```
+[eslint] package.json » eslint-config-react-app/jest#overrides[0]:
+        Environment key "jest/globals" is unknown
+```
 
-# Create Docker image for the frontend react application to be pushed to ECR
+- I removed the entry for jest from extends array
+
+```
+  "eslintConfig": {
+    "extends": [
+      "react-app"
+    ]
+```
+
+- It compiled successfully after that
+
+### Create docker build for frontend
+
+```
+docker build \
+--build-arg REACT_APP_BACKEND_URL="http://localhost:4567" \
+--build-arg REACT_APP_AWS_PROJECT_REGION="$AWS_DEFAULT_REGION" \
+--build-arg REACT_APP_AWS_COGNITO_REGION="$AWS_DEFAULT_REGION" \
+--build-arg REACT_APP_AWS_USER_POOLS_ID="ca-central-1_Sn1lgzw8T" \
+--build-arg REACT_APP_CLIENT_ID="34fjuf4h7vmu9fc2s5niu5uo11" \
+-t frontend-react-js \
+-f Dockerfile.prod \
+.
+```
+
+#### Create Docker image for the frontend react application to be pushed to ECR
+
 ```
 aws ecr create-repository \
   --repository-name frontend-react-js \
   --image-tag-mutability MUTABLE
 ```
 
-
 - Ran successfully and i can see a repo on ECR in AWS
+
+#### Set URL
+
+```
+export ECR_FRONTEND_REACT_URL="$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/frontend-react-js"
+echo $ECR_FRONTEND_REACT_URL
+```
+
+#### Tag image
+
+```
+docker tag frontend-react-js:latest $ECR_FRONTEND_REACT_URL:latest
+```
+
+#### Push Image
+
+```
+docker push $ECR_FRONTEND_REACT_URL:latest
+```
+
+- Getting error
+
+```
+denied: Your authorization token has expired. Reauthenticate and try again.
+bootcamp@e7dca389ea0e:/workspaces/aws-bootcamp-cruddur-2023/frontend-react-js$ docker push $ECR_FRONTEND_REACT_URL:latest
+The push refers to repository [342196396576.dkr.ecr.ca-central-1.amazonaws.com/frontend-react-js]
+1379588a0ba0: Preparing
+f4ee27124ebd: Preparing
+042cd3f87f43: Preparing
+f1bee861c2ba: Preparing
+c4d67a5827ca: Preparing
+152a948bab3b: Waiting
+5e59460a18a3: Waiting
+d8a5a02a8c2d: Waiting
+7cd52847ad77: Waiting
+denied: Your authorization token has expired. Reauthenticate and try again.
+```
+
+- Did research to find
+
+```
+docker logout public.ecr.aws
+```
+
+- Did not work. Closed the workspace and opened it again
+
+### Trying this now:
+
+```
+aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username \
+AWS --password-stdin "$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com"
+```
+
+**Login Succeeded**
+
+# Push Frontend image to ECR
+
+```
+docker push $ECR_FRONTEND_REACT_URL:latest
+```
+
+#### Run and test
+
+```
+docker run --rm -p 3000:3000 -it frontend-react-js
+```
+
+# Update the docker image creation with correct backend url
+
+```
+cruddur-alb-1705497311.ca-central-1.elb.amazonaws.com
+```
+
+```
+docker build \
+--build-arg REACT_APP_BACKEND_URL="http://cruddur-alb-1705497311.ca-central-1.elb.amazonaws.com:4567" \
+--build-arg REACT_APP_AWS_PROJECT_REGION="$AWS_DEFAULT_REGION" \
+--build-arg REACT_APP_AWS_COGNITO_REGION="$AWS_DEFAULT_REGION" \
+--build-arg REACT_APP_AWS_USER_POOLS_ID="ca-central-1_Sn1lgzw8T" \
+--build-arg REACT_APP_CLIENT_ID="34fjuf4h7vmu9fc2s5niu5uo11" \
+-t frontend-react-js \
+-f Dockerfile.prod \
+.
+```
+
+#### Tag it again and push it again
+
+```
+docker tag frontend-react-js:latest $ECR_FRONTEND_REACT_URL:latest
+```
+
+#### Push Image
+
+```
+docker push $ECR_FRONTEND_REACT_URL:latest
+```
+
+# Create the frontend-react-js.json task definition:
+
+```
+{
+  "family": "frontend-react-js",
+  "executionRoleArn": "arn:aws:iam::342196396576:role/CruddurServiceExecutionRole",
+  "taskRoleArn": "arn:aws:iam::342196396576:role/CruddurTaskRole",
+  "networkMode": "awsvpc",
+  "cpu": "256",
+  "memory": "512",
+  "requiresCompatibilities": [
+    "FARGATE"
+  ],
+  "containerDefinitions": [
+    {
+      "name": "frontend-react-js",
+      "image": "342196396576.dkr.ecr.ca-central-1.amazonaws.com/frontend-react-js",
+      "essential": true,
+      "portMappings": [
+        {
+          "name": "frontend-react-js",
+          "containerPort": 3000,
+          "protocol": "tcp",
+          "appProtocol": "http"
+        }
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "cruddur",
+          "awslogs-region": "ca-central-1",
+          "awslogs-stream-prefix": "frontend-react-js"
+        }
+      }
+    }
+  ]
+}
+```
+
+# Next we need to register the task definition
+
+```
+aws ecs register-task-definition --cli-input-json file://aws/task-definitions/frontend-react-js.json
+```
+
+# Now create frontend service
+
+```
+aws ecs create-service --cli-input-json file://aws/json/service-frontend-react-js.json
+```
+
+# Update the security group: sg-0358926389218cfd3 - crud-srv-sg
+
+- added an inbound rule for port 3000 from ALB security group in to the ECS security group
+
+- The SG for my ALB had the port mentioned as 300 instead of 3000.
+- I fixed that to be able to successfully access the frontend using ALB:3000
+
+# Now start with Custom Domain set up
+ - Under route53 i created a new hosted zone
+ - Updated the name servers on my GoDaddy hosted domain
+ - Next we need a SSL certificate 
+  - Head to Certificate manager and create one
+  - added domains: kushbehl.ca	 and *.kushbehl.ca
+  - Requested the creation
+  - Then Added the records in route 53
+
+
+# Modified task defintion for backend to update FRONTEND and BACKEND URLs
+```
+        {
+          "name": "FRONTEND_URL",
+          "value": "gsdcanadacorp.info"
+        },
+        {
+          "name": "BACKEND_URL",
+          "value": "api.gsdcanadacorp.info"
+        },
+```
+
+**Register task definition again for backend**
+
+```
+aws ecs register-task-definition --cli-input-json file://aws/task-definitions/backend-flask.json
+```
+
+
+# Next do the same for front end but frontend is different. We need to rebuild the image
+#### Log in to ECR again
+```
+aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin "$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com"
+```
+
+### Next Set URL
+
+```
+export ECR_FRONTEND_REACT_URL="$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/frontend-react-js"
+echo $ECR_FRONTEND_REACT_URL
+```
+
+### Build image - Run it from frontend-react-js directory
+```
+docker build \
+--build-arg REACT_APP_BACKEND_URL="https://api.gsdcanadacorp.info" \
+--build-arg REACT_APP_AWS_PROJECT_REGION="$AWS_DEFAULT_REGION" \
+--build-arg REACT_APP_AWS_COGNITO_REGION="$AWS_DEFAULT_REGION" \
+--build-arg REACT_APP_AWS_USER_POOLS_ID="ca-central-1_Sn1lgzw8T" \
+--build-arg REACT_APP_CLIENT_ID="34fjuf4h7vmu9fc2s5niu5uo11" \
+-t frontend-react-js \
+-f Dockerfile.prod \
+.
+```
+
+#### Tag it again and push it again
+
+```
+docker tag frontend-react-js:latest $ECR_FRONTEND_REACT_URL:latest
+```
+
+#### Push Image
+
+```
+docker push $ECR_FRONTEND_REACT_URL:latest
+```
 

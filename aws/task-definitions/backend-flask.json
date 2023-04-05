@@ -58,11 +58,11 @@
         },
         {
           "name": "FRONTEND_URL",
-          "value": "*"
+          "value": "https://gsdcanadacorp.info"
         },
         {
           "name": "BACKEND_URL",
-          "value": "*"
+          "value": "https://api.gsdcanadacorp.info"
         },
         {
           "name": "AWS_DEFAULT_REGION",
