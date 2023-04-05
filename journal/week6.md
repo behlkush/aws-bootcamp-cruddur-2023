@@ -1,29 +1,29 @@
 # Week 6 — Deploying Containers
 
-# Test RDS Connection
+### Summary of workd done for Week 6
+- Create ECS cluster
+- Create Task definitions, register tasks, create backend and frontend ECS services
+- Register custom domain
+- Set up Route 53 to point custom domain to application load balancer
+- Set up load balancer listeners to point to backend and frontend respectively
+- Update Route 53 records to create aliases for gsdcanadacorp.info and api.gsdcanadacorp.info
 
-```
-#!/usr/bin/env python3
 
-import psycopg
-import os
-import sys
 
-connection_url = os.getenv("CONNECTION_URL")
+# Task 1 - Restructured bin directory in backend-flask - Created shell scripts below
 
-conn = None
-try:
-  print('attempting connection')
-  conn = psycopg.connect(connection_url)
-  print("Connection successful!")
-except psycopg.Error as e:
-  print("Unable to connect to the database:", e)
-finally:
-  conn.close()
-```
+## 1.1 File name and path: backend-flask/bin/db/test
+**Purpose**: Test RDS Connection to prod.
+
+## 1.2 File name and path: backend-flask/bin/flask/health-check
+**Purpose**: Check health of backend and frontend containers
+Note that we could have just gone ahead and used CURL for this but that would require
+our continer to have CURL / WGET install. Remember to keep the container minimal.
+Don't packet network utils in your containers.
+
+
 
 # Next implement a healthcheck for the flask app
-
 Add the following to the app.py in flask backend:
 
 ```
@@ -32,32 +32,7 @@ def health_check():
   return {'success': True}, 200
 ```
 
-- Next we create a new bash script bin/flask/health-check
 
-```
-#!/usr/bin/env python3
-
-import urllib.request
-
-try:
-  response = urllib.request.urlopen('http://localhost:4567/api/health-check')
-  if response.getcode() == 200:
-    print("[OK] Flask server is running")
-    exit(0) # success
-  else:
-    print("[BAD] Flask server is not running")
-    exit(1) # false
-# This for some reason is not capturing the error....
-#except ConnectionRefusedError as e:
-# so we'll just catch on all even though this is a bad practice
-except Exception as e:
-  print(e)
-  exit(1) # false
-```
-
-Note that we could have just gone ahead and used CURL for this but that would require
-our continer to have CURL / WGET install. Remember to keep the container minimal.
-Don't packet network utils in your containers.
 
 # Create CloudWatch Log Group
 
