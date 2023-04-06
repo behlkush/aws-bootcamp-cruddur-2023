@@ -595,7 +595,7 @@ docker run --rm -p 3000:3000 -it frontend-react-js
 cruddur-alb-1705497311.ca-central-1.elb.amazonaws.com
 ```
 
--[Build Image again referring to steps in this section](#create-docker-build-for-frontend)
+- [Build Image again referring to steps in this section](#create-docker-build-for-frontend)
 
 # Create task definition
 **File name / path**: aws/task-defintions/frontend-react-js.json
@@ -658,4 +658,4 @@ export ECR_FRONTEND_REACT_URL="$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazo
 echo $ECR_FRONTEND_REACT_URL
 ```
 
--[Build image again using the correct FRONTEND_URL](#create-docker-build-for-frontend)
+- [Build image again using the correct FRONTEND_URL referring to steps in this section](#create-docker-build-for-frontend)
