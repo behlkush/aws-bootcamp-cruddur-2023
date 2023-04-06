@@ -518,7 +518,7 @@ aws ecs create-service --cli-input-json file://aws/json/service-backend-flask.js
 
 - It compiled successfully after that
 
-#### Create docker build for frontend
+## Create docker build for frontend
 ```
 docker build \
 --build-arg REACT_APP_BACKEND_URL="http://localhost:4567" \
