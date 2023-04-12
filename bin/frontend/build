@@ -1,0 +1,16 @@
+#! /usr/bin/bash
+
+ABS_PATH=$(readlink -f "$0")
+BIN_PATH=$(dirname $ABS_PATH)
+PROJECT_PATH=$(dirname $BIN_PATH)
+FRONTEND_REACT_JS_PATH="$PROJECT_PATH/frontend-react-js"
+
+docker build \
+  --build-arg REACT_APP_BACKEND_URL="https://api.gsdcanadacorp.info" \
+  --build-arg REACT_APP_AWS_PROJECT_REGION="$AWS_DEFAULT_REGION" \
+  --build-arg REACT_APP_AWS_COGNITO_REGION="$AWS_DEFAULT_REGION" \
+  --build-arg REACT_APP_AWS_USER_POOLS_ID="ca-central-1_Sn1lgzw8T" \
+  --build-arg REACT_APP_CLIENT_ID="34fjuf4h7vmu9fc2s5niu5uo11" \
+  -t frontend-react-js \
+  -f "$FRONTEND_REACT_JS_PATH/Dockerfile.prod" \
+  "$FRONTEND_REACT_JS_PATH/."

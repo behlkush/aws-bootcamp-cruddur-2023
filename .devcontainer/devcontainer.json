@@ -6,10 +6,6 @@
   "features": {
     "ghcr.io/devcontainers/features/docker-in-docker:2": {}
   },
-  // "ghcr.io/devcontainers/features/docker-in-docker:1": {
-  //   "version": "latest",
-  //   "moby": true
-  // },
   "forwardPorts": [
     3000,
     4567,
@@ -66,5 +62,5 @@
     "${localWorkspaceFolder}/.devcontainer/devcontainer.env"
   ],
   "remoteUser": "bootcamp",
-  "postAttachCommand": "cd ./frontend-react-js && npm install && cd ../backend-flask && pip install -r requirements.txt && sh bin/ecs/install-sm &&  sh bin/rds/update-sg-rule"
+  "postAttachCommand": "cd ./frontend-react-js && npm install && cd ../backend-flask && pip install -r requirements.txt && sh bin/ecs/install-sm &&  cd .. && sh bin/rds/update-sg-rule"
 }

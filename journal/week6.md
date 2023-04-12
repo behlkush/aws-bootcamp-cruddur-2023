@@ -1,6 +1,7 @@
 # Week 6 — Deploying Containers
 
 ### Summary of workd done for Week 6
+
 - Create ECS cluster
 - Create Task definitions, register tasks, create backend and frontend ECS services
 - Register custom domain
@@ -8,22 +9,21 @@
 - Set up load balancer listeners to point to backend and frontend respectively
 - Update Route 53 records to create aliases for gsdcanadacorp.info and api.gsdcanadacorp.info
 
-
-
 ## Restructured bin directory in backend-flask - Created shell scripts below
 
 #### File name and path: backend-flask/bin/db/test
+
 **Purpose**: Test RDS Connection to prod.
 
 #### File name and path: backend-flask/bin/flask/health-check
+
 **Purpose**: Check health of backend and frontend containers
 Note that we could have just gone ahead and used CURL for this but that would require
 our continer to have CURL / WGET install. Remember to keep the container minimal.
 Don't packet network utils in your containers.
 
-
-
 #### Next implement a healthcheck for the flask app
+
 Add the following to the app.py in flask backend:
 
 ```
@@ -31,7 +31,6 @@ Add the following to the app.py in flask backend:
 def health_check():
   return {'success': True}, 200
 ```
-
 
 ## Create CloudWatch Log Group
 
@@ -53,26 +52,32 @@ aws ecs create-cluster \
 ```
 
 # Issue 1: Error while creating cluster
+
 - Got An error occurred (ServerException) when calling the CreateCluster operation (reached max retries: 2): Service Unavailable. Please try again later.
 - On second try it ran successfully with result below:
 
-
 ## Create our docker containers now - We can store the images in ECR
+
 #### Create my first repository through CLI: This is for Python image
+
 ```
 aws ecr create-repository \
   --repository-name cruddur-python \
   --image-tag-mutability MUTABLE
 ```
+
 #### Next log in to ECR
+
 ```
 aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username \
 AWS --password-stdin "$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com"
 ```
+
 - Output -- Login Succeeded
 - Now that we are logged in - we can push the containers in our ECR
 
 #### Set URL -- This requires us to pass the base URI of our ECR
+
 ```
 export ECR_PYTHON_URL="$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/cruddur-python"
 echo $ECR_PYTHON_URL
@@ -81,6 +86,7 @@ echo $ECR_PYTHON_URL
 - 342196396576.dkr.ecr.ca-central-1.amazonaws.com/cruddur-python -- Matches my URI for ECR
 
 #### Pull the docker image for python
+
 - So what we are looking to do is, instead of pulling in the python image everytime from docker hub,
   instead we are pulling it once and then we will push it into our ECR which is our private repo.
 - Going forward we won't be then dependent on Dockerhub anymore for python image
@@ -93,16 +99,19 @@ docker pull python:3.10-slim-buster
   docker.io/library/python:3.10-slim-buster
 
 #### Tag image
+
 ```
 docker tag python:3.10-slim-buster $ECR_PYTHON_URL:3.10-slim-buster
 ```
 
 #### Push image
+
 ```
 docker push $ECR_PYTHON_URL:3.10-slim-buster
 ```
 
 - Output:
+
 ```
 128cd062b35d: Pushed
 44ae7921fd10: Pushed
@@ -113,16 +122,19 @@ c9182c130984: Pushed
 ```
 
 #### Update backend Dockerfile to use the ECR image instead of utilizing docker hub
+
 ```
 FROM 342196396576.dkr.ecr.ca-central-1.amazonaws.com/cruddur-python:3.10-slim-buster
 ```
 
 #### Check if the image gets pulled
+
 ```
 docker compose up backend-flask db
 ```
 
 Then check the API URL: http://localhost:4567/api/health-check
+
 ```
 {
   "success": true
@@ -132,11 +144,13 @@ Then check the API URL: http://localhost:4567/api/health-check
 - So our health check is returning true
 
 ### Turn on debugging in FLASK through Dockerfile
+
 ```
 ENV FLASK_DEBUG=1
 ```
 
 # Next push the FLASK image to ECR
+
 #### Create a new repo for backend-flask
 
 ```
@@ -153,16 +167,19 @@ echo $ECR_BACKEND_FLASK_URL
 ```
 
 #### Build the flask image
+
 ```
 docker build -t backend-flask .
 ```
 
 #### Tag it to latest
+
 ```
 docker tag backend-flask:latest $ECR_BACKEND_FLASK_URL:latest
 ```
 
 #### Push image
+
 ```
 docker push $ECR_BACKEND_FLASK_URL:latest
 ```
@@ -170,9 +187,11 @@ docker push $ECR_BACKEND_FLASK_URL:latest
 - Do some debugging to make sure the container image is usable
 
 # Before created a Task definition in ECS, we first need to create roles
+
 - Create Task and Exection Roles for Task Defintion
 
 #### Create ExecutionRole
+
 ```
 aws iam create-role \
     --role-name CruddurServiceExecutionRole \
@@ -181,7 +200,8 @@ aws iam create-role \
 
 - This is of course failing and giving error:
 
-# Issue 2 
+# Issue 2
+
 ```
 An error occurred (MalformedPolicyDocument) when calling the CreateRole operation: Has prohibited field Resource
 ```
@@ -189,6 +209,7 @@ An error occurred (MalformedPolicyDocument) when calling the CreateRole operatio
 - We needed to create parameters in parameter source because the resource mentioned in policy json doesn't exist yet.
 
 #### Parameters creation in Parameter store
+
 - Passing Senstive Data to Task Defintion
   Reference links:
   https://docs.aws.amazon.com/AmazonECS/latest/developerguide/specifying-sensitive-data.html
@@ -222,6 +243,7 @@ aws iam put-role-policy \
 - Note that to make it work i had to rename the role name to: CruddurServiceExecutionRole
 
 ## We are ready now to create the task role: Create TaskRole
+
 ```
 aws iam create-role \
     --role-name CruddurTaskRole \
@@ -262,22 +284,26 @@ aws iam put-role-policy \
 - Note that the trailing double quotes are required
 
 #### Attach the role to policy
+
 ```
 aws iam attach-role-policy --policy-arn arn:aws:iam::aws:policy/CloudWatchFullAccess --role-name CruddurTaskRole
 aws iam attach-role-policy --policy-arn arn:aws:iam::aws:policy/AWSXRayDaemonWriteAccess --role-name CruddurTaskRole
 ```
 
 ### Now we can come back and create the task definition for our ECS cluster
+
 **File name / path**: aws/task-definitions/backend-flask.json
+
 - Created a json file with all parameters required to create the task definition under: aws/task-definitions/backend-flask.json
 
-
 ## Register Task Defintion
+
 ```
 aws ecs register-task-definition --cli-input-json file://aws/task-definitions/backend-flask.json
 ```
 
 #### Set Default VPC
+
 ```
 export DEFAULT_VPC_ID=$(aws ec2 describe-vpcs \
 --filters "Name=isDefault, Values=true" \
@@ -286,6 +312,7 @@ export DEFAULT_VPC_ID=$(aws ec2 describe-vpcs \
 ```
 
 #### Set ECS task security group -- Create Security Group
+
 ```
 export CRUD_SERVICE_SG=$(aws ec2 create-security-group \
   --group-name "crud-srv-sg" \
@@ -296,6 +323,7 @@ echo $CRUD_SERVICE_SG
 ```
 
 #### Authorize security group to allow traffic inbound
+
 ```
 aws ec2 authorize-security-group-ingress \
   --group-id $CRUD_SERVICE_SG \
@@ -305,6 +333,7 @@ aws ec2 authorize-security-group-ingress \
 ```
 
 #### Add new role to the policy: CruddurServiceExecutionPolicy
+
 - Once we tried to launch a task it errorred out for a role that is required
 - GetAuthorizationToken - added to the policy
 - next i added cloudwatchfullaccess policy also added
@@ -342,6 +371,7 @@ aws ec2 authorize-security-group-ingress \
 ```
 
 #### Get default subnet IDs
+
 ```
 export DEFAULT_SUBNET_IDS=$(aws ec2 describe-subnets  \
  --filters Name=vpc-id,Values=$DEFAULT_VPC_ID \
@@ -353,29 +383,35 @@ echo $DEFAULT_SUBNET_IDS
 - Returns back: subnet-04ab9732898672d8e,subnet-0f2be29ffefe70df5,subnet-0eb17d2423d58d9ae
 
 ## Create backend service - using an input json file
+
 **File Name / Path**: aws/json/service-backend-flask.json
 **Purpose**: To be passed as an input to CLI from creating service
 
 #### Backend service
+
 ```
 aws ecs create-service --cli-input-json file://aws/json/service-backend-flask.json
 ```
 
 #### Connect to instances via sessions manager
+
 https://docs.aws.amazon.com/systems-manager/latest/userguide/session-manager-working-with-install-plugin.html#install-plugin-linux https://docs.aws.amazon.com/systems-manager/latest/userguide/session-manager-working-with-install-plugin.html#install-plugin-verify
 
 #### Install for Ubuntu
+
 ```
 curl "https://s3.amazonaws.com/session-manager-downloads/plugin/latest/ubuntu_64bit/session-manager-plugin.deb" -o "session-manager-plugin.deb"
 sudo dpkg -i session-manager-plugin.deb
 ```
 
 #### Verify session manager is working
+
 ```
 session-manager-plugin
 ```
 
 #### Connect to the container
+
 ```
 aws ecs execute-command  \
 --region $AWS_DEFAULT_REGION \
@@ -387,6 +423,7 @@ aws ecs execute-command  \
 ```
 
 - **Connected successfully**
+
 ```
 The Session Manager plugin was installed successfully. Use the AWS CLI to start a session.
 
@@ -397,13 +434,16 @@ root@ip-172-31-1-131:/backend-flask#
 #### ECS Service and task launched successfully - now open it
 
 # Issue 3:
+
 not opening using http://35.183.118.156:4567/
 
 **Can be a security group issue**
+
 - Updated SG inbound rule to accept TCP on 4567
 
 Visit: http://35.183.118.156:4567/api/health-check
 And it returned success
+
 ```
 {
   "success": true
@@ -411,6 +451,7 @@ And it returned success
 ```
 
 ## Connect Container to RDS
+
 - We try to visit /api/acitivites/home but it didn't work.
 - this is because backend contianer doesn't have access to RDS via security group. So RDS's SG needs to be updated to allow that
   in bound connection
@@ -418,8 +459,8 @@ And it returned success
 - RDS SG is the default one so edit that
 - Once i added SG of ECS to RDS Group, api/activities/home is now reachable
 
-
 ## Set up a load balancer via AWS Console
+
 - To create an ALB - we created an internet facing security group- sg-07e9133df7d8c3f4b
 - Add this as security group of ALB while creating the ALB
 - Before that first allow the ECS hosted backend to be accessible only via ALB SG
@@ -438,12 +479,15 @@ And it returned success
 - cruddur-alb -- successfully created
 
 #### Create the ECS service using ALB
+
 - To generate a skeleton:
+
 ```
 aws ecs create-service --generate-cli-skeleton
 ```
 
 #### Update the service-backend-flask.json with ALB details
+
 ```
   "loadBalancers": [
     {
@@ -461,12 +505,14 @@ aws ecs create-service --cli-input-json file://aws/json/service-backend-flask.js
 ```
 
 #### Update ALB security group : sg-07e9133df7d8c3f4b - cruddur-alb-sg
+
 - Add inbound traffic for port 4567
 - Add inbound traffic for port 3000
 
 - Next visit: http://cruddur-alb-1705497311.ca-central-1.elb.amazonaws.com:4567/api/activities/home and it worked
 
 #### Turn on ALB Logging
+
 - Go into the attributes section and first create a new s3 bucket: cruddur-alb-access-logs-owen
   - Note that the bucket currently has public access
 - Select the bucket location to store access logs back in ALB attributes.
@@ -493,13 +539,14 @@ aws ecs create-service --cli-input-json file://aws/json/service-backend-flask.js
 - The attribute changes were saved after adding above bucket policy
 
 ## Frontend ECS service
-**File Name / Path**: aws/task-definitions/frontent-react-js.json 
+
+**File Name / Path**: aws/task-definitions/frontent-react-js.json
 **Purpose**: For creating frontend service
 
 **Gitignore file updated to exclude the build folder**
 
-
 # Issue 4:
+
 - Next i ran npm run build to build the front end contianer but it errored out giving:
 
 ```
@@ -519,6 +566,7 @@ aws ecs create-service --cli-input-json file://aws/json/service-backend-flask.js
 - It compiled successfully after that
 
 ## Create docker build for frontend
+
 ```
 docker build \
 --build-arg REACT_APP_BACKEND_URL="http://localhost:4567" \
@@ -531,32 +579,39 @@ docker build \
 .
 ```
 
-**Create Docker image for the frontend react application to be pushed to ECR
+\*\*Create Docker image for the frontend react application to be pushed to ECR
+
 ```
 aws ecr create-repository \
   --repository-name frontend-react-js \
   --image-tag-mutability MUTABLE
 ```
+
 - Ran successfully and i can see a repo on ECR in AWS
 
-**URL
+\*\*URL
+
 ```
 export ECR_FRONTEND_REACT_URL="$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/frontend-react-js"
 echo $ECR_FRONTEND_REACT_URL
 ```
 
-**Tag image
+\*\*Tag image
+
 ```
 docker tag frontend-react-js:latest $ECR_FRONTEND_REACT_URL:latest
 ```
 
-**Push Image
+\*\*Push Image
+
 ```
 docker push $ECR_FRONTEND_REACT_URL:latest
 ```
 
 # Issue 5:
+
 - Getting error
+
 ```
 denied: Your authorization token has expired. Reauthenticate and try again.
 bootcamp@e7dca389ea0e:/workspaces/aws-bootcamp-cruddur-2023/frontend-react-js$ docker push $ECR_FRONTEND_REACT_URL:latest
@@ -572,7 +627,9 @@ d8a5a02a8c2d: Waiting
 7cd52847ad77: Waiting
 denied: Your authorization token has expired. Reauthenticate and try again.
 ```
+
 #### Session token had expired so log in to ECR again using:
+
 ```
 aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username \
 AWS --password-stdin "$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com"
@@ -581,16 +638,19 @@ AWS --password-stdin "$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com"
 **Login Succeeded**
 
 # Push Frontend image to ECR
+
 ```
 docker push $ECR_FRONTEND_REACT_URL:latest
 ```
 
 #### Run and test
+
 ```
 docker run --rm -p 3000:3000 -it frontend-react-js
 ```
 
 # Update the docker image creation with correct backend url
+
 ```
 cruddur-alb-1705497311.ca-central-1.elb.amazonaws.com
 ```
@@ -598,35 +658,39 @@ cruddur-alb-1705497311.ca-central-1.elb.amazonaws.com
 - [Build Image again referring to steps in this section](#create-docker-build-for-frontend)
 
 # Create task definition
+
 **File name / path**: aws/task-defintions/frontend-react-js.json
 
+\*\*Next we need to register the task definition
 
-**Next we need to register the task definition
 ```
 aws ecs register-task-definition --cli-input-json file://aws/task-definitions/frontend-react-js.json
 ```
 
-**Now create frontend service
+\*\*Now create frontend service
+
 ```
 aws ecs create-service --cli-input-json file://aws/json/service-frontend-react-js.json
 ```
 
-**Update the security group: sg-0358926389218cfd3 - crud-srv-sg
+\*\*Update the security group: sg-0358926389218cfd3 - crud-srv-sg
+
 - added an inbound rule for port 3000 from ALB security group in to the ECS security group
 - The SG for my ALB had the port mentioned as 300 instead of 3000.
 - I fixed that to be able to successfully access the frontend using ALB:3000
 
-**Now start with Custom Domain set up
- - Under route53 i created a new hosted zone
- - Updated the name servers on my GoDaddy hosted domain
- - Next we need a SSL certificate 
-  - Head to Certificate manager and create one
-  - added domains: kushbehl.ca	 and *.kushbehl.ca
-  - Requested the creation
-  - Then Added the records in route 53
+\*\*Now start with Custom Domain set up
 
+- Under route53 i created a new hosted zone
+- Updated the name servers on my GoDaddy hosted domain
+- Next we need a SSL certificate
+- Head to Certificate manager and create one
+- added domains: kushbehl.ca and \*.kushbehl.ca
+- Requested the creation
+- Then Added the records in route 53
 
-**Modified task defintion for backend to update FRONTEND and BACKEND URLs
+\*\*Modified task defintion for backend to update FRONTEND and BACKEND URLs
+
 ```
         {
           "name": "FRONTEND_URL",
@@ -640,13 +704,14 @@ aws ecs create-service --cli-input-json file://aws/json/service-frontend-react-j
 
 **Register task definition again for backend**
 
-```
+```sh
 aws ecs register-task-definition --cli-input-json file://aws/task-definitions/backend-flask.json
 ```
 
-
 # Next do the same for front end but frontend is different. We need to rebuild the image
+
 #### Log in to ECR again
+
 ```
 aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin "$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com"
 ```
@@ -659,3 +724,60 @@ echo $ECR_FRONTEND_REACT_URL
 ```
 
 - [Build image again using the correct FRONTEND_URL referring to steps in this section](#create-docker-build-for-frontend)
+
+# The custom site gsd\*\*.info is up and running and showing cruddur interface now
+
+# Turn Debug OFF on Flask
+
+- Debug setting is a security risk and we are looking to turn it off next.
+- Created a Dockerfile.prod version of Dockerfile for backend-flask app with debugging turned off
+
+```sh
+CMD [ "python3", "-m" , "flask", "run", "--host=0.0.0.0", "--port=4567", "--no-debug", "--no-debugger", "--no-reload"]
+```
+
+- Log in to ECR using the script created previously by me: bin/ecr/login-ecr
+
+- Run below command to build the new backend container with debug off:
+
+```
+docker build -f Dockerfile.prod -t backend-flask-prod .
+```
+
+- Now we need to run this image locally as we have built it locally and we need to pass
+  the environment variables for it to run. I have set them up based on my local set up (as i am running everything local and not on gitpod)
+
+```sh
+docker run --rm \
+-p 4567:4567 \
+-e AWS_ENDPOINT_URL="http://localhost:8000" \
+-e CONNECTION_URL="postgresql://postgres:password@localhost:5432/cruddur" \
+-e FRONTEND_URL="http://localhost:3000" \
+-e BACKEND_URL="http://localhost:4567" \
+-e OTEL_SERVICE_NAME='backend-flask' \
+-e OTEL_EXPORTER_OTLP_ENDPOINT="https://api.honeycomb.io" \
+-e OTEL_EXPORTER_OTLP_HEADERS="x-honeycomb-team=${HONEYCOMB_API_KEY}" \
+-e AWS_XRAY_URL="*localhost:4567*" \
+-e AWS_XRAY_DAEMON_ADDRESS="xray-daemon:2000" \
+-e AWS_DEFAULT_REGION="${AWS_DEFAULT_REGION}" \
+-e AWS_ACCESS_KEY_ID="${AWS_ACCESS_KEY_ID}" \
+-e AWS_SECRET_ACCESS_KEY="${AWS_SECRET_ACCESS_KEY}" \
+-e ROLLBAR_ACCESS_TOKEN="${ROLLBAR_ACCESS_TOKEN}" \
+-e AWS_COGNITO_USER_POOL_ID="${AWS_COGNITO_USER_POOL_ID}" \
+-e AWS_COGNITO_USER_POOL_CLIENT_ID="34fjuf4h7vmu9fc2s5niu5uo11" \
+-it backend-flask-prod
+```
+
+# Re-factoring bin directory
+
+- Created backend and frontend directories in a new bin folder on the top level of project
+- created scripts
+  - backend and frontend:
+    - build, connect, deploy, generate-env, push, register, run
+  - Moved ecr, db, ddb, cognito folders out into the bin directory from backend-flask/bin dir
+
+**Update devcontainer.json with new path of rds updage sg rule script**
+
+```
+ "postAttachCommand": "cd ./frontend-react-js && npm install && cd ../backend-flask && pip install -r requirements.txt && sh bin/ecs/install-sm &&  cd .. && sh bin/rds/update-sg-rule"
+```
