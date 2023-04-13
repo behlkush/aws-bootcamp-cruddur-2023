@@ -1,3 +1,4 @@
 .devcontainer/devcontainer.env
 docker/**/*
 frontend-react-js/build/*
+backend-flask/session-manager-plugin.deb

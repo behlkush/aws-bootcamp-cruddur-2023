@@ -62,5 +62,5 @@
     "${localWorkspaceFolder}/.devcontainer/devcontainer.env"
   ],
   "remoteUser": "bootcamp",
-  "postAttachCommand": "cd ./frontend-react-js && npm install && cd ../backend-flask && pip install -r requirements.txt && sh bin/ecs/install-sm &&  cd .. && sh bin/rds/update-sg-rule"
+  "postAttachCommand": "sh ./bin/rds/update-sg-rule && cd ./frontend-react-js && npm install && cd ../backend-flask && pip install -r requirements.txt && sh bin/ecs/install-sm"
 }
