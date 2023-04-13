@@ -781,3 +781,27 @@ docker run --rm \
 ```
  "postAttachCommand": "cd ./frontend-react-js && npm install && cd ../backend-flask && pip install -r requirements.txt && sh bin/ecs/install-sm &&  cd .. && sh bin/rds/update-sg-rule"
 ```
+
+# Video 63: Week 6-7 - Fix Messaging In Production
+### My messaging worked correctly as I was using the users that existed in my database.
+**I did work on fixing the db.py to have a return statement before {}**
+- Successfully tested it too and instead of an internal server error 500, now I get empty string {} in response from users_short service
+- Also this required 3 steps to be sent to ECS:
+  1. ./bin/backend/build
+  2. ./bin/backend/push
+  3. ./bin/backend/deploy
+
+
+# Video 64: Week 6-7 - Implement Refresh Token Cognito
+- So the issue we have on our hands is that the CheckAuth.js is not trying to renew our cognito token.
+- I am also trying to understand what happens in CheckAuth.js currently
+  - We do see that return Auth.currentAuthenticatedUser() is making the call to function itself again and we don't want to do that
+
+- Updated CheckAuth.js to use Amplify's: Auth.currentSession() function to refresh a token
+- Updated all other scripts that use check Auth to now use the newly added function: getAccessToken from CheckAuth.js
+```js
+import { getAccessToken } from '../lib/CheckAuth';
+await getAccessToken()
+const access_token = localStorage.getItem("access_token")
+'Authorization': `Bearer ${access_token}`,
+```
