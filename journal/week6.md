@@ -805,3 +805,5 @@ await getAccessToken()
 const access_token = localStorage.getItem("access_token")
 'Authorization': `Bearer ${access_token}`,
 ```
+
+# End of week 6
