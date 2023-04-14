@@ -806,4 +806,21 @@ const access_token = localStorage.getItem("access_token")
 'Authorization': `Bearer ${access_token}`,
 ```
 
+# Video: Week 6 7 Securiing Flask (Part 2) -- I missed this but now revisiting it as per a dicord members pointer
+- This is the video where the bin scripts like: push, build, connect, deploy, generate-env, register and run were created
+- We used GPT 4 to help us with force-deploy option below:
+```sh
+aws ecs update-service \
+--cluster $CLUSTER_NAME \
+--service $SERVICE_NAME \
+--task-definition $LATEST_TASK_DEFINITION_ARN \
+--force-new-deployment
+```
+- Learnt the usage of: readlink and dirname commands in bash
+```sh
+ABS_PATH=$(readlink -f "$0")
+BIN_PATH=$(dirname $ABS_PATH)
+```
+
+
 # End of week 6
