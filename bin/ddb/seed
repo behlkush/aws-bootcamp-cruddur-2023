@@ -55,7 +55,7 @@ def get_user_uuids():
 
 
 # Constants needed for main functions
-now = datetime.now(timezone.utc).astimezone()
+now = datetime.now()
 users = get_user_uuids()
 message_group_uuid = "5ae290ed-55d1-47a0-bc6d-fe2bc2700399" 
 # Moving the table chane to make it a global constant as it is used 
@@ -144,7 +144,8 @@ for i in range(len(lines)):
     raise 'invalid line'
   
   #These guys are chatting very fast and the messages are separated by a one minute interval
-  created_at = (now + timedelta(minutes=i)).isoformat()
+  created_at = (now - timedelta(days=1) + timedelta(minutes=i)).isoformat()
+  
 
   create_message(
     client=ddb,

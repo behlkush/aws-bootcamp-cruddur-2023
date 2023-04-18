@@ -74,7 +74,7 @@
 ## Verify env variables are available to backend and frontend containers
 
 - Do a docker compuse up and attach shell to both frontend and backend
-# Issue: Backend is failing to start
+# Issue 1: Backend is failing to start
 - On debugging i found that the env variable: AWS_COGNITO_USER_POOL_ID was not being set
 - I ran generate-env for backend again and then verified that it is present in backend-flask.env file
 - It is now present as shown in backend logs too:
@@ -168,11 +168,22 @@ Command> docker network inspect cruddur-net
 Connected to xray-daemon
 ```
 
-## Issue was of quotes around the env files, I didn't have those quotes and it worked for me right in a single go.
+## Issue 2 was of quotes around the env files, I didn't have those quotes and it worked for me right in a single go.
 
 
 # Going back to XRAY work
-- Also note that my XRAY returned a positive health check in a single go.
-- This was also because i didn't move my healthcheck for backend to out bin folder on the top of project directory.
+- we couldnot implement a healthcheck for xray as netstat is not installed by default on our xray container image
+- and we decided not to install or build a new image just to have netstat
+- so we are not implementing healthcheck for xray.
+
+# Turn on container insights
+- Updated ECS cluster to turn on Container Insights.
 
 
+- I also rand build, push, register and deploy for both frontend and backend to be on the latest version,
+after the XRAY related changes.
+
+- For me container insights started showing my cruddur ECS cluster immediately and I can see all my containers in there.
+- of course there is no data under XRAY traces / service map.
+
+# END OF WEEK 7

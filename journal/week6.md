@@ -54,7 +54,7 @@ aws ecs create-cluster \
 # Issue 1: Error while creating cluster
 
 - Got An error occurred (ServerException) when calling the CreateCluster operation (reached max retries: 2): Service Unavailable. Please try again later.
-- On second try it ran successfully with result below:
+- On second try it ran successfully
 
 ## Create our docker containers now - We can store the images in ECR
 
