@@ -1,1 +1,363 @@
 # Week 8 — Serverless Image Processing
+
+# Video 71: FREE AWS Cloud Project Bootcamp (Week 8) - Serverless Image Processing
+
+- Focus this week is on severless avatar image processing
+  - The purpose is to process avatar images
+    **Summary**
+  - s3 bucket with an image
+  - Lambda that processes that image (so basically when something goes into the s3 event notification will
+    fire the lambda)
+- Using AWS CDK - Typescript is the language of choice
+
+## Install dependencies for CDK
+
+```sh
+ npm install aws-cdk -g
+```
+
+**Output**
+
+```
+added 2 packages in 2s
+a6110829@TR-C02FQ34DMD6R thumbing-serverless-cdk %
+```
+
+## Initialize a new project
+
+```sh
+cdk init app --language typescript
+```
+
+**Output**
+
+```
+Executing npm install...
+✅ All done!
+```
+
+## Add an S3 bucket
+
+- Added the following code to thumbing-serverless-cdk-stack.ts
+
+```ts
+import * as s3 from "aws-cdk-lib/aws-s3";
+
+const bucketName: string = process.env.THUMBING_BUCKET_NAME as string;
+const bucket = new s3.Bucket(this, "ThumbingBucket", {
+  bucketName: bucketName,
+  removalPolicy: cdk.RemovalPolicy.DESTROY,
+});
+```
+
+**Important note: the CDK functions that start with cfn are level 1 functions - avoid them if possible**
+
+## Get CDK created yaml using: cdk synth
+
+```sh
+cdk synth
+```
+
+- Json equivalent of the same can be found under: cdk.out folder in file: ThumbingServerlessCdkStack.template.json
+
+## Bootstrap the cdk
+
+```sh
+cdk bootstrap "aws://342196396576/ca-central-1"
+```
+
+**Output**
+
+```sh
+ ⏳  Bootstrapping environment aws://342196396576/ca-central-1...
+Trusted accounts for deployment: (none)
+Trusted accounts for lookup: (none)
+Using default execution policy of 'arn:aws:iam::aws:policy/AdministratorAccess'. Pass '--cloudformation-execution-policies' to customize.
+CDKToolkit: creating CloudFormation changeset...
+ ✅  Environment aws://342196396576/ca-central-1 bootstrapped.
+```
+
+\*\*Note: Bootstrapping needs to be done for each account and each region - in case CDK needs to be used in all accounts
+and all regions
+
+## Deploy my first cdk resource
+
+```sh
+cdk deploy
+```
+
+**Output**
+
+```sh
+
+ ✅  ThumbingServerlessCdkStack
+
+✨  Deployment time: 35.3s
+
+Stack ARN:
+arn:aws:cloudformation:ca-central-1:342196396576:stack/ThumbingServerlessCdkStack/9bacf460-e2b3-11ed-9e3a-02832f4353cc
+
+✨  Total time: 41.73s
+
+```
+
+## Difference between SAM and CDK
+
+- SAM is a specialized version of Cloudformation which is more concise that allows you to deploy
+  serverless resources
+- CDK on the other hand, lets you use, the programming language of your choice to deploy resources
+  https://aws.amazon.com/blogs/compute/better-together-aws-sam-and-aws-cdk/
+
+\*\*Note: Do a cdk synth before ckd deploy
+
+## Lambda function
+
+- The lambda function will use the code written in JavaScript
+
+  - It is because the image processing library we will be using in JavaScript is lightweight
+
+- Getting Error on cdk synth after adding lambda function call in cdk stack typescript file
+
+```sh
+  code: 'MODULE_NOT_FOUND',
+```
+
+- This requires dotenv package to be installed
+
+```sh
+npm i dotenv
+```
+
+# Issue 1:
+
+- Even after install above package, my cdk synth attempts kept failing as i am running everything local
+  - Updated the env variables to below to fix the issues:
+  ```sh
+  THUMBING_BUCKET_NAME='thumbing-bucket'
+  THUMBING_FUNCTION_PATH='../aws/lambdas/process-images/'
+  ```
+
+# Video 72: Week 8 - Serverless Image Process CDK
+
+- Need to install cdk by default for each run, as i am running locally, i will modify devcontainer.json
+- my new postAttackCommand in devcontainer.json
+
+```json
+"postAttachCommand": "sudo npm install aws-cdk -g && cd ./thumbing-serverless-cdk && npm i && cd .. &&  sh ./bin/rds/update-sg-rule && cd ./frontend-react-js && npm install && cd ../backend-flask && pip install -r requirements.txt && sh bin/ecs/install-sm"
+```
+
+\*\*Note: I had to use a sudo npm install because it needs sudo to be able to install globally
+
+## All env vars together:
+
+```sh
+const bucketName: string = process.env.THUMBING_BUCKET_NAME as string;
+const folderInput: string = process.env.THUMBING_S3_FOLDER_INPUT as string;
+const folderOutput: string = process.env.THUMBING_S3_FOLDER_OUTPUT as string;
+const webhookUrl: string = process.env.THUMBING_WEBHOOK_URL as string;
+const topicName: string = process.env.THUMBING_TOPIC_NAME as string;
+const functionPath: string = process.env.THUMBING_FUNCTION_PATH as string;
+console.log('bucketName',bucketName)
+console.log('folderInput',folderInput)
+console.log('folderOutput',folderOutput)
+console.log('webhookUrl',webhookUrl)
+console.log('topicName',topicName)
+console.log('functionPath',functionPath)
+```
+
+**Note: Because i have a local env, i am not using env example as that issue will come only**
+**if i were using gitpod. I can keep .env in ignore and still be able to make cdk work**
+
+## Create the lambda folder for processing images: aws/lambda/process-images
+
+- Created all the required files from omenking repo into my repo
+
+  - index.js
+  - package-lock.json
+  - s3-image-processing.js
+  - test.js
+  - example.json
+
+- Next run from: aws/lambdas/process-images directory:
+
+```sh
+npm init -y
+```
+
+- This creates an empty package.json
+- Next we are using sharpjs to process image, so install that using:
+
+```sh
+npm i sharp
+```
+
+- Next install aws client-s3
+
+```sh
+npm i @aws-sdk/client-s3
+```
+
+- Do a cdk deploy
+- Next we need to take care of the lambda as it needs the sharp library to be packaged with it, to work
+
+```sh
+npm install
+rm -rf node_modules/sharp
+SHARP_IGNORE_GLOBAL_LIBVIPS=1 npm install --arch=x64 --platform=linux --libc=glibc sharp
+```
+
+Source: https://sharp.pixelplumbing.com/install
+
+# Create S3 Event notification to lambda
+
+```ts
+import * as s3n from 'aws-cdk-lib/aws-s3-notifications'
+this.createS3NotifyToLambda(folderInput,lambda,bucket)
+
+createS3NotifyToLambda(prefix: string, lambda: lambda.IFunction, bucket: s3.IBucket): void {
+  const destination = new s3n.LambdaDestination(lambda);
+  bucket.addEventNotification(s3.EventType.OBJECT_CREATED_PUT,
+destination,
+{prefix: prefix} // Folder to contiain original image
+  )
+}
+```
+
+# Issue 2: Andrew faced an issue related to the old bucket name
+
+- It was due to it being set in his gitpod env. I didn't face that because i am local and also because that variable
+  only existed in my .env file
+
+# Multiple Stacks
+
+- Andrew talks about how he keeps two cloud formation templates, one for infra and one for the s3 bucket that he doesn't want to be
+  teared down along with the rest of the stack.
+
+# S3 bucket creation seperation from CDK
+
+- Created the bucket manually and added a jpg image under original folder.
+- Uploaded an avatar image under avatars/original folder in s3
+
+- The event notification is not triggering the lambda, reason being we did not give permission
+  to the lambda to put an object in s3.
+
+# Create a bucket access policy for lambda
+
+```ts
+import * as iam from 'aws-cdk-lib/aws-iam';
+const s3ReadWritePolicy = this.createPolicyBucketAccess(bucket.bucketArn);
+lambda.addToRolePolicy(s3ReadWritePolicy);
+createPolicyBucketAccess(bucketArn: string) {
+  const s3ReadWritePolicy = new iam.PolicyStatement({
+    actions: [
+    's3:GetObject',
+    's3:PutObject',
+    ],
+    resources: [
+      `${bucketArn}/*`,
+    ]
+  });
+  return s3ReadWritePolicy;
+}
+```
+
+# Issue faced:
+
+- The lambda was not getting triggered no matter what i did.
+  - Final solution, i looked at .ts cloud stack file and saw that while pressing ctrl z accidently - i had reverted back to
+    using a POST instead of a PUT and thats why the issue.
+  - Once i replaced it with PUT, the lambda was triggered and the jpg file got processed.
+
+# Next issue: Processed image has extension jpg.
+
+\*\*File needing modification: index.js and s3-image-processing.js
+
+- We basically need to remove jpg extension while generating the processed image and replace it with jpeg
+
+```js
+// File: index.js
+// Logic to remove the extension jpg from the processed image
+const filename = path.parse(srcKey).name;
+const dstKey = `${folderOutput}/${filename}.jpeg`;
+
+//File s3-image-processing.js
+.jpeg()
+ContentType: "image/jpeg";
+```
+
+- Next do a cdk deploy
+- verified that the processed forlder now has the new image file with jpeg extension
+
+# Create SNS Topic
+- Add below code to the cdk task file:
+```ts
+import * as sns from 'aws-cdk-lib/aws-sns';
+
+const snsTopic = this.createSnsTopic(topicName)
+
+createSnsTopic(topicName: string): sns.ITopic{
+  const logicalName = "Topic";
+  const snsTopic = new sns.Topic(this, logicalName, {
+    topicName: topicName
+  });
+  return snsTopic;
+}
+```
+
+# Create an SNS Subscription
+```ts
+import * as s3n from 'aws-cdk-lib/aws-s3-notifications';
+
+this.createSnsSubscription(snsTopic,webhookUrl)
+
+createSnsSubscription(snsTopic: sns.ITopic, webhookUrl: string): sns.Subscription {
+  const snsSubscription = snsTopic.addSubscription(
+    new subscriptions.UrlSubscription(webhookUrl)
+  )
+  return snsSubscription;
+}
+```
+
+# Create S3 Event Notification to SNS
+```ts
+this.createS3NotifyToSns(folderOutput,snsTopic,bucket)
+
+createS3NotifyToSns(prefix: string, snsTopic: sns.ITopic, bucket: s3.IBucket): void {
+  const destination = new s3n.SnsDestination(snsTopic)
+  bucket.addEventNotification(
+    s3.EventType.OBJECT_CREATED_PUT, 
+    destination,
+    {prefix: prefix}
+  );
+}
+```
+
+# Create S3 Event Notification to Lambda
+```ts
+this.createS3NotifyToLambda(folderInput,laombda,bucket)
+
+createS3NotifyToLambda(prefix: string, lambda: lambda.IFunction, bucket: s3.IBucket): void {
+  const destination = new s3n.LambdaDestination(lambda);
+    bucket.addEventNotification(s3.EventType.OBJECT_CREATED_PUT,
+    destination,
+    {prefix: prefix}
+  )
+}
+```
+
+# Create Policy for Bucket Access
+```ts
+const s3ReadWritePolicy = this.createPolicyBucketAccess(bucket.bucketArn)
+
+```
+
+# Attach the Policies to the Lambda Role
+```ts
+lambda.addToRolePolicy(s3ReadWritePolicy);
+
+```
+
+- Note that currently the code for SNS publish is commmented out.
+- Verified that the processed image SNS topic is mentioned in event notifications for the bucket
+
+# End of video 71
