@@ -361,3 +361,63 @@ lambda.addToRolePolicy(s3ReadWritePolicy);
 - Verified that the processed image SNS topic is mentioned in event notifications for the bucket
 
 # End of video 71
+
+# Video 72: Week 8 - Serving Avatars via CloudFront
+## Goal is to serve image over assets via CloudFront
+  - distribute images using CDN instead of serving them from app backend everytime
+
+# Set up Cloud Front manually for now
+- Fill in the details like
+  - Origin domain - select your assets.cruddur.gsdcanadacorp.info.s3.ca-central1.amazonaws.com bucket
+  - Name - Same as above
+  - Alternate Domain name (CNAME) - assets.gsdcanadacorp.info
+  - Needs to create an ACM in us-east 1 - so manually creating it.
+    - certificate wass validated fast and issued immediately. Select it from the drop-down
+
+# Update route 53 to point assets.gsdcanadacorp.info to CDN distribution
+- Create a CNAME record in route 53 and point it to CDN distribution that we just created.
+
+# Create bucket policy for CloudFront Distribution to access s3 bucket
+```json
+{
+        "Version": "2008-10-17",
+        "Id": "PolicyForCloudFrontPrivateContent",
+        "Statement": [
+            {
+                "Sid": "AllowCloudFrontServicePrincipal",
+                "Effect": "Allow",
+                "Principal": {
+                    "Service": "cloudfront.amazonaws.com"
+                },
+                "Action": "s3:GetObject",
+                "Resource": "arn:aws:s3:::assets.gsdcanadacorp.info/*",
+                "Condition": {
+                    "StringEquals": {
+                      "AWS:SourceArn": "arn:aws:cloudfront::342196396576:distribution/E3G1Y8UTDZ6Q1K"
+                    }
+                }
+            }
+        ]
+}
+```
+
+# Test your work
+- Access: https://assets.gsdcanadacorp.info/avatars/processed/cyber_defender_cruddur.jpeg and it loads up 
+my avatar image successfully.
+
+
+# S3 buckets rethinking - redesign - re-architect -- on the go
+- It is often the case that while actually implementing we realize that some things need to change
+- We have a new though process and want to separate out original avatar assets in a different bucket than the processed avatars.
+- Made the changes in .env and cdk ts accordingly.
+```sh
+UPLOADS_BUCKET_NAME='cruddur-uploaded-avatars-ASECRET'
+ASSETS_BUCKET_NAME='assets.cruddur.ASECRET'
+```
+and 
+```ts
+    const uploadsBucket = this.createBucket(uploadsBucketName);
+    const assetsBucket = this.importBucket(assetsBucketName);
+```
+
+# Video 74: Week 8 - Implement Users Profile Page
