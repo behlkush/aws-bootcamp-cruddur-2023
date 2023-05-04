@@ -11,32 +11,32 @@ RUN ["/bin/bash", "-c", "echo I am now using bash!"]
 RUN yes | unminimize \
     && apt update \    
     && apt install -yq \
-        apt-utils --no-install-recommends apt-utils \
-        asciidoctor \        
-        bash-completion \
-        build-essential \
-        ca-certificates \
-        curl \
-        git \
-        git-lfs \
-        gnupg \
-        htop \
-        jq \
-        less \
-        llvm \
-        locales \
-        lsb-release \
-        man-db \
-        net-tools \        
-        nano \        
-        python3 \        
-        python3-pip \    
-        software-properties-common \
-        ssh \
-        sudo \
-        unzip \
-        wget \
-        vim \     
+    apt-utils --no-install-recommends apt-utils \
+    asciidoctor \        
+    bash-completion \
+    build-essential \
+    ca-certificates \
+    curl \
+    git \
+    git-lfs \
+    gnupg \
+    htop \
+    jq \
+    less \
+    llvm \
+    locales \
+    lsb-release \
+    man-db \
+    net-tools \        
+    nano \        
+    python3 \        
+    python3-pip \    
+    software-properties-common \
+    ssh \
+    sudo \
+    unzip \
+    wget \
+    vim \     
     && locale-gen en_US.UTF-8 \
     && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/*
 ENV LANG=en_US.UTF-8
@@ -54,10 +54,13 @@ RUN cd /tmp \
 #   $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null \
 #   && apt update \
 #   && apt install -yq docker-ce
- 
-# Install AWS CLI tool then cleanup
+
+# Install AWS CLI tool then cleanup - Updated for M1 chip
 RUN cd /tmp \
-    && curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" \
+    && curl "https://awscli.amazonaws.com/awscli-exe-linux-aarch64.zip" -o "awscliv2.zip" \
+    # && unzip awscliv2.zip \
+    # && sudo ./aws/install \
+    # && curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" \
     && unzip awscliv2.zip \
     && sudo ./aws/install \
     && rm awscliv2.zip \

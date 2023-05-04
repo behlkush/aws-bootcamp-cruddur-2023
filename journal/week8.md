@@ -421,3 +421,6 @@ and
 ```
 
 # Video 74: Week 8 - Implement Users Profile Page
+
+- Lets begin by running everything locally and running docker-compose up
+- Remember we need to do ECR log in before we can get everything up
