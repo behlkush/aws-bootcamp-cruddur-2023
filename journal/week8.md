@@ -424,3 +424,41 @@ and
 
 - Lets begin by running everything locally and running docker-compose up
 - Remember we need to do ECR log in before we can get everything up
+
+# BIG ISSUE CAME IN - My Macbook crashed
+- Got a new replacement and setting everything up from scratch as I work local
+- Docker build was taking forever for frontend
+  - Researched and reasearched and researched some more to finally find that running below command can help:
+    ```sh
+    docker system prune
+    ```
+  - And that did help in doing docker-compose up and building the frontend.
+
+# Backend and frontend throwing errors
+```
+aws-bootcamp-cruddur-2023-backend-flask-1      |     __import__(module_name)
+aws-bootcamp-cruddur-2023-backend-flask-1      |   File "/backend-flask/app.py", line 112, in <module>
+aws-bootcamp-cruddur-2023-backend-flask-1      |     @app.before_first_request
+aws-bootcamp-cruddur-2023-backend-flask-1      | AttributeError: 'Flask' object has no attribute 'before_first_request'. Did you mean: '_got_first_request'
+```
+
+## Fixed using Discord suggestion
+```
+#@app.before_first_request
+with app.app_context():
+    def init_rollbar():
+```
+- Before_first request is no longer supported and is replaced by app_context
+
+- Still got errors related to docker image being built for linux amd instead of my m1 mac- arm/64/v8
+- Researched a bit more and found that  i can use platform tag in docker-compose.yml file
+```yaml
+    platform: linux/arm64/v8
+```
+
+- After this that error went away, then i got error for frontend
+```sh
+sh: 1: react-scripts: not found
+```
+
+- This requires a npm install so doing that.
