@@ -462,3 +462,169 @@ sh: 1: react-scripts: not found
 ```
 
 - This requires a npm install so doing that.
+- Finally after npm install it wokred .
+
+## Added npm install for front end in .devcontainer.json file so that it is executed everytime containers are launched
+
+
+# Work on setting up EditProfileButton functionality
+- New js and css files called EditProfileButton
+- This button should only show up if you are logged in.
+
+- Next add this to the user feed page so that the option is shown to edit profile
+
+## activity_feed related changes in UserFeedPage, NotificationsFeedPage and HomeFeedChange.js
+- Moved below js code away from ActivityFeed.js
+```js
+    <div className='activity_feed'>
+      <div className='activity_feed_heading'>
+        <div className='title'>{props.title}</div>
+      </div>
+```
+- Into the UserFeedPage, NotificationsFeedPage and HomeFeedChange.js files
+- UserFeedPage.js file changes:
+```js
+      <div className='activity_feed'>
+          <div className='activity_feed_heading'>
+            <div className='title'>{title}</div>
+          </div>
+          <ActivityFeed activities={activities} />
+        </div>
+```
+
+- HomeFeedChange.js changes:
+```js
+        <div className='activity_feed'>
+          <div className='activity_feed_heading'>
+            <div className='title'>Home</div>
+          </div>
+```
+
+- Similar change in NotificationsFeedPage.js
+
+# Make changes to profile page
+- We observed that there are not all conditionals(options) present on the profile page
+- Adding them now
+ - Added this by adding checkAuth updates into UserFeedPage.js
+ ```js
+       await getAccessToken()
+      const access_token = localStorage.getItem("access_token")
+      const res = await fetch(backend_url, {
+        headers: {
+          Authorization: `Bearer ${access_token}`
+        },
+
+            checkAuth(setUser);
+```
+- Also added access token functionality as shown above
+
+## Next up, add a count of cruds on the profile page.
+- That requires modifying show.sql in the backend -- added cruds count on public activities
+```sql
+      (
+       SELECT 
+        count(true) 
+       FROM public.activities
+       WHERE
+        activities.user_uuid = users.uuid
+       ) as cruds_count
+```
+
+**Note** - This is a temporary solution until we put caching in place.
+
+# Add a profile image and a banner
+- Profile image was alerady uploaded in s3 previously and is available via CloudFront Distro
+- Uploaded a banner image as well and next created ProfileHeading.js and ProfileHading.css pages
+```js
+import './ProfileHeading.css';
+import EditProfileButton from '../components/EditProfileButton';
+
+export default function ProfileHeading(props) {
+  const backgroundImage = 'url("https://assets.gsdcanadacorp.info/banners/banner.jpeg")';
+  const styles = {
+    backgroundImage: backgroundImage,
+    backgroundSize: 'cover',
+    backgroundPosition: 'center',
+  };
+  return (
+    <div className='activity_feed_heading profile_heading'>
+      <div className='title'>{props.profile.display_name}</div>
+      <div className="cruds_count">{props.profile.cruds_count} Cruds</div>
+      <div class="banner" style={styles} >
+        <div className="avatar">
+          <img src="https://assets.gsdcanadacorp.info/avatars/cyber_defender_cruddur.jpeg"></img>
+        </div>
+      </div>
+      <div class="info">
+        <div class='id'>
+          <div className="display_name">{props.profile.display_name}</div>
+          <div className="handle">@{props.profile.handle}</div>
+        </div>
+        <EditProfileButton setPopped={props.setPopped} />
+      </div>
+
+    </div>
+  );
+}
+```
+and ProfileHeading.css
+```css
+.profile_heading {
+  padding-bottom: 0px;
+}
+
+.profile_heading .avatar {
+  position: absolute;
+  bottom: -74px;
+  left: 16px;
+}
+
+.profile_heading .avatar img {
+  width: 148px;
+  height: 148px;
+  border-radius: 999px;
+  border: solid 8px var(--fg);
+}
+
+.profile_heading .banner {
+  position: relative;
+  height: 200px;
+}
+
+.profile_heading .info {
+  display: flex;
+  flex-direction: row;
+  align-items: start;
+  padding: 16px;
+}
+
+.profile_heading .info .id {
+  padding-top: 70px;
+  flex-grow: 1;
+}
+
+.profile_heading .info .id .display_name {
+  font-size: 24px;
+  font-weight: bold;
+  color: rgb(255, 255, 255);
+}
+
+.profile_heading .info .id .handle {
+  font-size: 16px;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.profile_heading .cruds_count {
+  color: rgba(255, 255, 255, 0.7);
+}
+```
+- And called them from UserFeedPage.js
+```js
+          <ProfileHeading setPopped={setPoppedProfile} profile={profile} />
+```
+
+# App after banner and profile image
+![Cruddur at work](assets/week8/cruddur_app_week8.png)
+
+# End of Video 74: Week 8 - Implement Users Profile Page
+
