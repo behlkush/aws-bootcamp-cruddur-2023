@@ -1,9 +1,9 @@
 import './ReplyForm.css';
 import React from "react";
 import process from 'process';
-import {ReactComponent as BombIcon} from './svg/bomb.svg';
+import { ReactComponent as BombIcon } from './svg/bomb.svg';
 
-import ActivityContent  from '../components/ActivityContent';
+import ActivityContent from '../components/ActivityContent';
 
 export default function ReplyForm(props) {
   const [count, setCount] = React.useState(0);
@@ -11,7 +11,7 @@ export default function ReplyForm(props) {
 
   const classes = []
   classes.push('count')
-  if (240-count < 0){
+  if (240 - count < 0) {
     classes.push('err')
   }
 
@@ -35,7 +35,7 @@ export default function ReplyForm(props) {
 
         let activities_deep_copy = JSON.parse(JSON.stringify(props.activities))
         let found_activity = activities_deep_copy.find(function (element) {
-          return element.uuid ===  props.activity.uuid;
+          return element.uuid === props.activity.uuid;
         });
         found_activity.replies.push(data)
 
@@ -57,15 +57,20 @@ export default function ReplyForm(props) {
     setMessage(event.target.value);
   }
 
+  const close = () => {
+    console.log('close')
+    //props.setPopped(false)
+  }
+
   let content;
-  if (props.activity){
+  if (props.activity) {
     content = <ActivityContent activity={props.activity} />;
   }
 
 
   if (props.popped === true) {
     return (
-      <div className="popup_form_wrap">
+      <div className="popup_form_wrap" onClick={close}>
         <div className="popup_form">
           <div className="popup_heading">
           </div>
@@ -73,7 +78,7 @@ export default function ReplyForm(props) {
             <div className="activity_wrap">
               {content}
             </div>
-            <form 
+            <form
               className='replies_form'
               onSubmit={onsubmit}
             >
@@ -81,10 +86,10 @@ export default function ReplyForm(props) {
                 type="text"
                 placeholder="what is your reply?"
                 value={message}
-                onChange={textarea_onchange} 
+                onChange={textarea_onchange}
               />
               <div className='submit'>
-                <div className={classes.join(' ')}>{240-count}</div>
+                <div className={classes.join(' ')}>{240 - count}</div>
                 <button type='submit'>Reply</button>
               </div>
             </form>

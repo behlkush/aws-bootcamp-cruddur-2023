@@ -1,15 +1,33 @@
 #! /usr/bin/bash
-set -e # stop if it fails at any point
-
+set -e
 CYAN='\033[1;36m'
 NO_COLOR='\033[0m'
 LABEL="bootstrap"
-printf "${CYAN}=========---OS ${LABEL}${NO_COLOR}\n"
+printf "${CYAN}==== ${LABEL}${NO_COLOR}\n"
 
 ABS_PATH=$(readlink -f "$0")
-BIN_DIR=$(dirname $ABS_PATH)
+BIN_PATH=$(dirname $ABS_PATH)
+DB_PATH="$BIN_PATH/db"
+DDB_PATH="$BIN_PATH/ddb"
+echo "====$"
+echo $DB_PATH
+echo $DDB_PATH
+echo "====$"
 
-source "$BIN_DIR/db/setup"
-source "$BIN_DIR/ddb/schema-load"
-source "$BIN_DIR/ddb/seed"
 
+echo "Creation local database"
+#source "$THEIA_WORKSPACE_ROOT/bin/db/kill-all"
+# source "$DB_PATH/setup"
+echo "Creation local dynamodb"
+
+# Check if the table exists and delete it if it does
+# if aws dynamodb list-tables --endpoint-url http://localhost:8000 --output text | grep -q "cruddur-messages"; then
+#     echo "===================="
+#     echo "Deleting existing table"
+#     aws dynamodb delete-table --table-name cruddur-messages --endpoint-url http://localhost:8000 
+#     echo "Table Deleted"
+# fi
+
+python3 "$DDB_PATH/schema-load"
+echo "Seeding mock data"
+python3 "$DDB_PATH/seed"

@@ -289,7 +289,9 @@ ContentType: "image/jpeg";
 - verified that the processed forlder now has the new image file with jpeg extension
 
 # Create SNS Topic
+
 - Add below code to the cdk task file:
+
 ```ts
 import * as sns from 'aws-cdk-lib/aws-sns';
 
@@ -305,6 +307,7 @@ createSnsTopic(topicName: string): sns.ITopic{
 ```
 
 # Create an SNS Subscription
+
 ```ts
 import * as s3n from 'aws-cdk-lib/aws-s3-notifications';
 
@@ -319,13 +322,14 @@ createSnsSubscription(snsTopic: sns.ITopic, webhookUrl: string): sns.Subscriptio
 ```
 
 # Create S3 Event Notification to SNS
+
 ```ts
 this.createS3NotifyToSns(folderOutput,snsTopic,bucket)
 
 createS3NotifyToSns(prefix: string, snsTopic: sns.ITopic, bucket: s3.IBucket): void {
   const destination = new s3n.SnsDestination(snsTopic)
   bucket.addEventNotification(
-    s3.EventType.OBJECT_CREATED_PUT, 
+    s3.EventType.OBJECT_CREATED_PUT,
     destination,
     {prefix: prefix}
   );
@@ -333,6 +337,7 @@ createS3NotifyToSns(prefix: string, snsTopic: sns.ITopic, bucket: s3.IBucket): v
 ```
 
 # Create S3 Event Notification to Lambda
+
 ```ts
 this.createS3NotifyToLambda(folderInput,laombda,bucket)
 
@@ -346,15 +351,15 @@ createS3NotifyToLambda(prefix: string, lambda: lambda.IFunction, bucket: s3.IBuc
 ```
 
 # Create Policy for Bucket Access
-```ts
-const s3ReadWritePolicy = this.createPolicyBucketAccess(bucket.bucketArn)
 
+```ts
+const s3ReadWritePolicy = this.createPolicyBucketAccess(bucket.bucketArn);
 ```
 
 # Attach the Policies to the Lambda Role
+
 ```ts
 lambda.addToRolePolicy(s3ReadWritePolicy);
-
 ```
 
 - Note that currently the code for SNS publish is commmented out.
@@ -363,10 +368,13 @@ lambda.addToRolePolicy(s3ReadWritePolicy);
 # End of video 71
 
 # Video 72: Week 8 - Serving Avatars via CloudFront
+
 ## Goal is to serve image over assets via CloudFront
-  - distribute images using CDN instead of serving them from app backend everytime
+
+- distribute images using CDN instead of serving them from app backend everytime
 
 # Set up Cloud Front manually for now
+
 - Fill in the details like
   - Origin domain - select your assets.cruddur.gsdcanadacorp.info.s3.ca-central1.amazonaws.com bucket
   - Name - Same as above
@@ -375,49 +383,55 @@ lambda.addToRolePolicy(s3ReadWritePolicy);
     - certificate wass validated fast and issued immediately. Select it from the drop-down
 
 # Update route 53 to point assets.gsdcanadacorp.info to CDN distribution
+
 - Create a CNAME record in route 53 and point it to CDN distribution that we just created.
 
 # Create bucket policy for CloudFront Distribution to access s3 bucket
+
 ```json
 {
-        "Version": "2008-10-17",
-        "Id": "PolicyForCloudFrontPrivateContent",
-        "Statement": [
-            {
-                "Sid": "AllowCloudFrontServicePrincipal",
-                "Effect": "Allow",
-                "Principal": {
-                    "Service": "cloudfront.amazonaws.com"
-                },
-                "Action": "s3:GetObject",
-                "Resource": "arn:aws:s3:::assets.gsdcanadacorp.info/*",
-                "Condition": {
-                    "StringEquals": {
-                      "AWS:SourceArn": "arn:aws:cloudfront::342196396576:distribution/E3G1Y8UTDZ6Q1K"
-                    }
-                }
-            }
-        ]
+  "Version": "2008-10-17",
+  "Id": "PolicyForCloudFrontPrivateContent",
+  "Statement": [
+    {
+      "Sid": "AllowCloudFrontServicePrincipal",
+      "Effect": "Allow",
+      "Principal": {
+        "Service": "cloudfront.amazonaws.com"
+      },
+      "Action": "s3:GetObject",
+      "Resource": "arn:aws:s3:::assets.gsdcanadacorp.info/*",
+      "Condition": {
+        "StringEquals": {
+          "AWS:SourceArn": "arn:aws:cloudfront::342196396576:distribution/E3G1Y8UTDZ6Q1K"
+        }
+      }
+    }
+  ]
 }
 ```
 
 # Test your work
-- Access: https://assets.gsdcanadacorp.info/avatars/processed/cyber_defender_cruddur.jpeg and it loads up 
-my avatar image successfully.
 
+- Access: https://assets.gsdcanadacorp.info/avatars/processed/cyber_defender_cruddur.jpeg and it loads up
+  my avatar image successfully.
 
 # S3 buckets rethinking - redesign - re-architect -- on the go
+
 - It is often the case that while actually implementing we realize that some things need to change
 - We have a new though process and want to separate out original avatar assets in a different bucket than the processed avatars.
 - Made the changes in .env and cdk ts accordingly.
+
 ```sh
 UPLOADS_BUCKET_NAME='cruddur-uploaded-avatars-ASECRET'
 ASSETS_BUCKET_NAME='assets.cruddur.ASECRET'
 ```
-and 
+
+and
+
 ```ts
-    const uploadsBucket = this.createBucket(uploadsBucketName);
-    const assetsBucket = this.importBucket(assetsBucketName);
+const uploadsBucket = this.createBucket(uploadsBucketName);
+const assetsBucket = this.importBucket(assetsBucketName);
 ```
 
 # Video 74: Week 8 - Implement Users Profile Page
@@ -426,6 +440,7 @@ and
 - Remember we need to do ECR log in before we can get everything up
 
 # BIG ISSUE CAME IN - My Macbook crashed
+
 - Got a new replacement and setting everything up from scratch as I work local
 - Docker build was taking forever for frontend
   - Researched and reasearched and researched some more to finally find that running below command can help:
@@ -435,6 +450,7 @@ and
   - And that did help in doing docker-compose up and building the frontend.
 
 # Backend and frontend throwing errors
+
 ```
 aws-bootcamp-cruddur-2023-backend-flask-1      |     __import__(module_name)
 aws-bootcamp-cruddur-2023-backend-flask-1      |   File "/backend-flask/app.py", line 112, in <module>
@@ -443,20 +459,24 @@ aws-bootcamp-cruddur-2023-backend-flask-1      | AttributeError: 'Flask' object 
 ```
 
 ## Fixed using Discord suggestion
+
 ```
 #@app.before_first_request
 with app.app_context():
     def init_rollbar():
 ```
+
 - Before_first request is no longer supported and is replaced by app_context
 
 - Still got errors related to docker image being built for linux amd instead of my m1 mac- arm/64/v8
-- Researched a bit more and found that  i can use platform tag in docker-compose.yml file
+- Researched a bit more and found that i can use platform tag in docker-compose.yml file
+
 ```yaml
-    platform: linux/arm64/v8
+platform: linux/arm64/v8
 ```
 
-- After this that error went away, then i got error for frontend
+# After this that error went away, then i got error for frontend
+
 ```sh
 sh: 1: react-scripts: not found
 ```
@@ -464,35 +484,50 @@ sh: 1: react-scripts: not found
 - This requires a npm install so doing that.
 - Finally after npm install it wokred .
 
+# AWS CLI Version issue
+
+- I had to install AWS CLI again using the correct install for M1 chip
+
+```sh
+curl "https://awscli.amazonaws.com/awscli-exe-linux-aarch64.zip" -o "awscliv2.zip"
+unzip awscliv2.zip
+sudo ./aws/install
+```
+
 ## Added npm install for front end in .devcontainer.json file so that it is executed everytime containers are launched
 
-
 # Work on setting up EditProfileButton functionality
+
 - New js and css files called EditProfileButton
 - This button should only show up if you are logged in.
 
 - Next add this to the user feed page so that the option is shown to edit profile
 
 ## activity_feed related changes in UserFeedPage, NotificationsFeedPage and HomeFeedChange.js
+
 - Moved below js code away from ActivityFeed.js
+
 ```js
     <div className='activity_feed'>
       <div className='activity_feed_heading'>
         <div className='title'>{props.title}</div>
       </div>
 ```
+
 - Into the UserFeedPage, NotificationsFeedPage and HomeFeedChange.js files
 - UserFeedPage.js file changes:
+
 ```js
-      <div className='activity_feed'>
-          <div className='activity_feed_heading'>
-            <div className='title'>{title}</div>
-          </div>
-          <ActivityFeed activities={activities} />
-        </div>
+<div className="activity_feed">
+  <div className="activity_feed_heading">
+    <div className="title">{title}</div>
+  </div>
+  <ActivityFeed activities={activities} />
+</div>
 ```
 
 - HomeFeedChange.js changes:
+
 ```js
         <div className='activity_feed'>
           <div className='activity_feed_heading'>
@@ -503,27 +538,32 @@ sh: 1: react-scripts: not found
 - Similar change in NotificationsFeedPage.js
 
 # Make changes to profile page
+
 - We observed that there are not all conditionals(options) present on the profile page
 - Adding them now
- - Added this by adding checkAuth updates into UserFeedPage.js
- ```js
-       await getAccessToken()
-      const access_token = localStorage.getItem("access_token")
-      const res = await fetch(backend_url, {
-        headers: {
-          Authorization: `Bearer ${access_token}`
-        },
+- Added this by adding checkAuth updates into UserFeedPage.js
 
-            checkAuth(setUser);
+```js
+      await getAccessToken()
+     const access_token = localStorage.getItem("access_token")
+     const res = await fetch(backend_url, {
+       headers: {
+         Authorization: `Bearer ${access_token}`
+       },
+
+           checkAuth(setUser);
 ```
+
 - Also added access token functionality as shown above
 
 ## Next up, add a count of cruds on the profile page.
+
 - That requires modifying show.sql in the backend -- added cruds count on public activities
+
 ```sql
       (
-       SELECT 
-        count(true) 
+       SELECT
+        count(true)
        FROM public.activities
        WHERE
         activities.user_uuid = users.uuid
@@ -533,41 +573,45 @@ sh: 1: react-scripts: not found
 **Note** - This is a temporary solution until we put caching in place.
 
 # Add a profile image and a banner
+
 - Profile image was alerady uploaded in s3 previously and is available via CloudFront Distro
 - Uploaded a banner image as well and next created ProfileHeading.js and ProfileHading.css pages
+
 ```js
-import './ProfileHeading.css';
-import EditProfileButton from '../components/EditProfileButton';
+import "./ProfileHeading.css";
+import EditProfileButton from "../components/EditProfileButton";
 
 export default function ProfileHeading(props) {
-  const backgroundImage = 'url("https://assets.gsdcanadacorp.info/banners/banner.jpeg")';
+  const backgroundImage =
+    'url("https://assets.gsdcanadacorp.info/banners/banner.jpeg")';
   const styles = {
     backgroundImage: backgroundImage,
-    backgroundSize: 'cover',
-    backgroundPosition: 'center',
+    backgroundSize: "cover",
+    backgroundPosition: "center",
   };
   return (
-    <div className='activity_feed_heading profile_heading'>
-      <div className='title'>{props.profile.display_name}</div>
+    <div className="activity_feed_heading profile_heading">
+      <div className="title">{props.profile.display_name}</div>
       <div className="cruds_count">{props.profile.cruds_count} Cruds</div>
-      <div class="banner" style={styles} >
+      <div class="banner" style={styles}>
         <div className="avatar">
           <img src="https://assets.gsdcanadacorp.info/avatars/cyber_defender_cruddur.jpeg"></img>
         </div>
       </div>
       <div class="info">
-        <div class='id'>
+        <div class="id">
           <div className="display_name">{props.profile.display_name}</div>
           <div className="handle">@{props.profile.handle}</div>
         </div>
         <EditProfileButton setPopped={props.setPopped} />
       </div>
-
     </div>
   );
 }
 ```
+
 and ProfileHeading.css
+
 ```css
 .profile_heading {
   padding-bottom: 0px;
@@ -618,13 +662,162 @@ and ProfileHeading.css
   color: rgba(255, 255, 255, 0.7);
 }
 ```
+
 - And called them from UserFeedPage.js
+
 ```js
-          <ProfileHeading setPopped={setPoppedProfile} profile={profile} />
+<ProfileHeading setPopped={setPoppedProfile} profile={profile} />
 ```
 
 # App after banner and profile image
+
 ![Cruddur at work](assets/week8/cruddur_app_week8.png)
 
 # End of Video 74: Week 8 - Implement Users Profile Page
 
+# Video 75: Week 8 - Implement Migrations Backend Endpoint and Profile Form
+
+## Work on Edit Profile form popup
+
+- I am not making changes to bootstrap because my generate env and ecr log in is happening via devcontainer.json:
+
+```json
+  "postAttachCommand": "sudo npm install aws-cdk -g && cd ./thumbing-serverless-cdk && npm i && cd .. &&  sh ./bin/rds/update-sg-rule && ./bin/ecr/login-ecr && ./bin/backend/generate-env && ./bin/frontend/generate-env && cd ./frontend-react-js && npm install && cd ../backend-flask && pip install -r requirements.txt && sh bin/ecs/install-sm"
+```
+
+- **Note** the use of generate-env and login-ecr scripts in the devcontianer postAttachCommand statement.
+
+# Ease the src inclusion in frontend using jsonconfig.json
+
+```js
+{
+  "compilerOptions": {
+    "baseUrl": "src"
+  },
+  "include": ["src"]
+}
+```
+
+## Edit profile button is rendered from UserFeedPage.js
+- To show the edit button pop-up we need a form page - created ProfileForm.js
+- Now refer to ProfileForm from UserFeedPage
+- Also moved the popup css related stanzas from ReplyForm.css to its own file: Popup.css
+```css
+.popup_form_wrap {
+  z-index: 100;
+  position: fixed;
+  height: 100%;
+  width: 100%;
+  top: 0;
+  left: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+  padding-top: 48px;
+  background: rgba(255,255,255,0.1)
+}
+
+.popup_form {
+  background: #000;
+  box-shadow: 0px 0px 6px rgba(190, 9, 190, 0.6);
+  border-radius: 16px;
+  width: 600px;
+}
+
+.popup_form .popup_heading {
+  display: flex;
+  flex-direction: row;
+  border-bottom: solid 1px rgba(255,255,255,0.4);
+  padding: 16px;
+}
+
+.popup_form .popup_heading .popup_title{
+  flex-grow: 1;
+  color: rgb(255,255,255);
+  font-size: 18px;
+
+}
+```
+
+- Added this css reference into App.js
+```js
+import './components/Popup.css';
+```
+
+# Create the backend module for Profile update page
+- Modify app.py to create a new endpoint that is being reached from ProfileForm.js
+```py
+@app.route("/api/profile/update", methods=['POST','OPTIONS'])
+@cross_origin()
+def data_update_profile():
+  bio          = request.json.get('bio',None)
+  display_name = request.json.get('display_name',None)
+  access_token = extract_access_token(request.headers)
+  try:
+    claims = cognito_jwt_token.verify(access_token)
+    cognito_user_id = claims['sub']
+    model = UpdateProfile.run(
+      cognito_user_id=cognito_user_id,
+      bio=bio,
+      display_name=display_name
+    )
+    if model['errors'] is not None:
+      return model['errors'], 422
+    else:
+      return model['data'], 200
+  except TokenVerifyError as e:
+    # unauthenicatied request
+    app.logger.debug(e)
+    return {}, 401
+```
+
+- A sql script was written to update the profile - update.sql
+```sql
+UPDATE public.users 
+SET 
+  bio = %(bio)s,
+  display_name= %(display_name)s
+WHERE 
+  users.cognito_user_id = %(cognito_user_id)s
+RETURNING handle;
+```
+- **Note** that if run right now, this would fail as bio field doesn't exist in the users table.
+
+- Ran this:
+```sh
+./bin/generate/migration add_bio_column
+```
+- And got a file generated under backend-flask/db/migrations/TIMESTAMP_add_bio_column.py
+
+## Migrate files and migrations->timestamp_add_bio_column.py files are not making sense to my
+## head at this time and i will try and will try and understand it more later.
+- What i do understand is that we are trying to alter an existing table to add bio column in it
+
+
+# Migration new overview
+- so now that i understand that we are trying to add a bio column into an existing table,
+i understand migrations better
+- Migrate and rollback scripts are there to initiate and rollback a transaction on the DB table schema_information
+- So if we want to add a new column calling bio into the existing users table, then we run **migrate** script
+- If we want to undo the transaction, we run **rollback** script.
+**Thus we have successfully implemented migrations**
+
+## Issues that cropped up because I am running local
+- Migrate script would repeatedly give errors that pool-1 connection could not be found
+  - Note that i was running a full docker compose up and that was my problem
+  - when i ran only ddb and psql containers and then ran migrate script it worked as it picked the correct
+  value of my CONNECTION_URL that has localhost instead of db in it.
+
+## Add the edit profile functionality to add bio.
+- updated ProfileHeading.js to include the newly created bio and show it in the profile
+```js
+      <div class="bio">{props.profile.bio}</div>
+```
+- Add corresponding css settings:
+```css
+.profile_heading .bio {
+  padding: 16px;
+  color: rgba(255, 255, 255, 0.7);
+}
+```

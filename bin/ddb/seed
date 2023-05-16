@@ -12,7 +12,7 @@ parent_path = os.path.abspath(os.path.join(current_path, '..', '..', 'backend-fl
 sys.path.append(parent_path)
 print("parent path to follow")
 print(parent_path)
-from lib.db import Db
+from lib.db import db
 
 # Constants
 attrs = {
@@ -39,7 +39,7 @@ def get_user_uuids():
         %(other_handle)s
         )
   """
-  users = Db.query_array_json(sql,{
+  users = db.query_array_json(sql,{
     'my_handle':  'owensound',
     'other_handle': 'behlkiaan'
   })
