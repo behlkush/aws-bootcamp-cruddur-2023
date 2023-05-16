@@ -821,3 +821,13 @@ i understand migrations better
   color: rgba(255, 255, 255, 0.7);
 }
 ```
+
+# Issue
+- As i had changed my dev laptop, code check in to git gave me error about index.lock file existing already
+- Fixed it:  
+```sh 
+rm -f ./.git/index.lock
+```
+
+# End of video 75
+
