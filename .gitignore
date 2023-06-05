@@ -5,3 +5,4 @@ backend-flask/session-manager-plugin.deb
 *.env
 node_modules
 .vscode/*
+vendor*

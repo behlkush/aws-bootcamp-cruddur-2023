@@ -444,9 +444,9 @@ const assetsBucket = this.importBucket(assetsBucketName);
 - Got a new replacement and setting everything up from scratch as I work local
 - Docker build was taking forever for frontend
   - Researched and reasearched and researched some more to finally find that running below command can help:
-    ```sh
-    docker system prune
-    ```
+```sh
+docker system prune
+```
   - And that did help in doing docker-compose up and building the frontend.
 
 # Backend and frontend throwing errors
@@ -699,9 +699,11 @@ and ProfileHeading.css
 ```
 
 ## Edit profile button is rendered from UserFeedPage.js
+
 - To show the edit button pop-up we need a form page - created ProfileForm.js
 - Now refer to ProfileForm from UserFeedPage
 - Also moved the popup css related stanzas from ReplyForm.css to its own file: Popup.css
+
 ```css
 .popup_form_wrap {
   z-index: 100;
@@ -715,7 +717,7 @@ and ProfileHeading.css
   justify-content: flex-start;
   align-items: center;
   padding-top: 48px;
-  background: rgba(255,255,255,0.1)
+  background: rgba(255, 255, 255, 0.1);
 }
 
 .popup_form {
@@ -728,25 +730,27 @@ and ProfileHeading.css
 .popup_form .popup_heading {
   display: flex;
   flex-direction: row;
-  border-bottom: solid 1px rgba(255,255,255,0.4);
+  border-bottom: solid 1px rgba(255, 255, 255, 0.4);
   padding: 16px;
 }
 
-.popup_form .popup_heading .popup_title{
+.popup_form .popup_heading .popup_title {
   flex-grow: 1;
-  color: rgb(255,255,255);
+  color: rgb(255, 255, 255);
   font-size: 18px;
-
 }
 ```
 
 - Added this css reference into App.js
+
 ```js
-import './components/Popup.css';
+import "./components/Popup.css";
 ```
 
 # Create the backend module for Profile update page
+
 - Modify app.py to create a new endpoint that is being reached from ProfileForm.js
+
 ```py
 @app.route("/api/profile/update", methods=['POST','OPTIONS'])
 @cross_origin()
@@ -773,48 +777,59 @@ def data_update_profile():
 ```
 
 - A sql script was written to update the profile - update.sql
+
 ```sql
-UPDATE public.users 
-SET 
+UPDATE public.users
+SET
   bio = %(bio)s,
   display_name= %(display_name)s
-WHERE 
+WHERE
   users.cognito_user_id = %(cognito_user_id)s
 RETURNING handle;
 ```
+
 - **Note** that if run right now, this would fail as bio field doesn't exist in the users table.
 
 - Ran this:
+
 ```sh
 ./bin/generate/migration add_bio_column
 ```
+
 - And got a file generated under backend-flask/db/migrations/TIMESTAMP_add_bio_column.py
 
 ## Migrate files and migrations->timestamp_add_bio_column.py files are not making sense to my
+
 ## head at this time and i will try and will try and understand it more later.
+
 - What i do understand is that we are trying to alter an existing table to add bio column in it
 
-
 # Migration new overview
+
 - so now that i understand that we are trying to add a bio column into an existing table,
-i understand migrations better
+  i understand migrations better
 - Migrate and rollback scripts are there to initiate and rollback a transaction on the DB table schema_information
 - So if we want to add a new column calling bio into the existing users table, then we run **migrate** script
 - If we want to undo the transaction, we run **rollback** script.
-**Thus we have successfully implemented migrations**
+  **Thus we have successfully implemented migrations**
 
 ## Issues that cropped up because I am running local
+
 - Migrate script would repeatedly give errors that pool-1 connection could not be found
   - Note that i was running a full docker compose up and that was my problem
   - when i ran only ddb and psql containers and then ran migrate script it worked as it picked the correct
-  value of my CONNECTION_URL that has localhost instead of db in it.
+    value of my CONNECTION_URL that has localhost instead of db in it.
 
 ## Add the edit profile functionality to add bio.
+
 - updated ProfileHeading.js to include the newly created bio and show it in the profile
+
 ```js
-      <div class="bio">{props.profile.bio}</div>
+<div class="bio">{props.profile.bio}</div>
 ```
+
 - Add corresponding css settings:
+
 ```css
 .profile_heading .bio {
   padding: 16px;
@@ -823,11 +838,106 @@ i understand migrations better
 ```
 
 # Issue
+
 - As i had changed my dev laptop, code check in to git gave me error about index.lock file existing already
-- Fixed it:  
-```sh 
+- Fixed it:
+
+```sh
 rm -f ./.git/index.lock
 ```
 
 # End of video 75
 
+# Video 76: Week 8 - Implement Avatar Uploading (Part 1)
+
+- File: ProfileForm.js - we will use AWS client sdk to talk to s3 from within JS
+- Instead of the SDK approach , we are going to follow the pre-signed URL approach
+
+- Create a lambda authorizer - for the s3 interaction
+  - We are going the ruby route when generating the pre-singed url using lambda
+  - For that A new function.rb file is created under aws/lambdas/cruddur-upload-avatar folder.
+  - When i am running bundle init in dev containers, its not being able to find it. Seems i need to install it.
+
+```sh
+sudo gem install bundler
+```
+
+- Installed bundle for ruby
+- Next did
+
+```sh
+bundle init
+```
+
+- This created a Gemfile
+
+```sh
+bundle install
+```
+
+- Install the dependencies
+
+```sh
+bundle exec ruby function.rb
+```
+
+- I was getting errors so installed a new ruby version instead of using the default one that comes with MAC.
+- then did bundle install and it succeeded.
+
+```sh
+https://cruddur-uploaded-avatars-owensound.s3.ca-central-1.amazonaws.com/mock.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAU7LD6UIQMVNMEZVN%2F20230529%2Fca-central-1%2Fs3%2Faws4_request&X-Amz-Date=20230529T191043Z&X-Amz-Expires=3600&X-Amz-SignedHeaders=host&X-Amz-Signature=dce720c7ac08ca344fc5bcdea89d2ba0d93968a0c10ca50a024100d8a82d0a48
+```
+
+- Got the above presigned url after running the ruby script.
+- I installed postman extension for VS Code (as i am local), and uploaded a file succesfully to the s3 bucket.
+
+**Note**: We need to create a lifecycle rule for our bucket files. For that we need to create sub folders because lifecycle rules work on prefixes.
+
+## New policy to allow the Lambda to write into the bucket and add it to the lambda role.
+
+**Policy name**: PresignedUrlAvatarUploadPolicy
+
+- The lambda was tested successfully and ready to be used with API Gateway - what we are looking to do is to use the jwt lambda authorizer: https://github.com/awslabs/aws-jwt-verify
+
+- So after copying the authorizer and creating an index.js out of it, now this needs to be installed in package.json
+- So we need to create a package.json or install this.
+
+```sh
+cd aws/lambdas/lambda-authorizer
+npm install aws-jwt-verify --save
+```
+
+## Issue:
+
+- I created the avatar upload lambda in a wrong region, so i ended up exporting and creating a new lambda in ca-central which is my region
+
+## Upload the lambda for jwt verification as a zip and create a new lambda in AWS
+
+## Next create API gateway and attach the lambda function to get presigned url
+- Also attach the custom lambda authorizer function
+- Tried calling the Gateway: https://84w6wezal0.execute-api.ca-central-1.amazonaws.com/avatars/key_upload which returns 
+```json
+{"message":"Unauthorized"}
+```
+- Above result is expected
+
+# Add avatar upload integration to frontend
+- Modify ProfileForm.js to create popup function for avatar upload 
+```js
+const s3upload = async (event) => {
+```
+
+- API gateway CORS permissions needs to be set to allow this functionality
+![API Gateway - CORS settings](assets/week8/cors_settings_api_gateway.png)
+
+## CORS Issue still exists but checking in the code till now 
+
+# End of video 76
+
+Summary of Week 8:
+
+- Andrew mentions - bonus points if you can figure out how to set env vars correctly.
+- In my local environment i have been able to achieve that using .devcontainer.json file
+  and option: postAttachCommand - I load all my variables and do all npm installs here in postAttachCommand and the env vars get set automatically and correctly.
+
+"postAttachCommand": "sudo npm install aws-cdk -g && cd ./thumbing-serverless-cdk && npm i && cd .. && sh ./bin/rds/update-sg-rule && ./bin/ecr/login-ecr && ./bin/backend/generate-env && ./bin/frontend/generate-env && cd ./frontend-react-js && npm install && cd ../backend-flask && pip install -r requirements.txt && sh bin/ecs/install-sm"

@@ -62,5 +62,5 @@
     "${localWorkspaceFolder}/.devcontainer/devcontainer.env"
   ],
   "remoteUser": "bootcamp",
-  "postAttachCommand": "sudo npm install aws-cdk -g && cd ./thumbing-serverless-cdk && npm i && cd .. &&  sh ./bin/rds/update-sg-rule && ./bin/ecr/login-ecr && ./bin/backend/generate-env && ./bin/frontend/generate-env && cd ./frontend-react-js && npm install && cd ../backend-flask && pip install -r requirements.txt && sh bin/ecs/install-sm"
+  "postAttachCommand": "sudo npm install aws-cdk -g && cd ./thumbing-serverless-cdk && npm i && cd .. &&  sh ./bin/rds/update-sg-rule && ./bin/ecr/login-ecr && ./bin/backend/generate-env && ./bin/frontend/generate-env && cd ./frontend-react-js && npm install && npm i @aws-sdk/client-s3 --save && cd ../backend-flask && pip install -r requirements.txt && sh bin/ecs/install-sm"
 }
