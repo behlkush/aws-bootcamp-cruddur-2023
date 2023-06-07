@@ -14,18 +14,17 @@ export default function ProfileForm(props) {
 
   const s3uploadkey = async (extension) => {
     console.log('ext', extension)
+    console.log('app frontend url', process.env.REACT_APP_FRONTEND_URL)
     try {
-      const gateway_url = `${process.env.REACT_APP_API_GATEWAY_ENDPOINT_URL}/avatars/key_upload`
+      // const gateway_url = `${process.env.REACT_APP_API_GATEWAY_ENDPOINT_URL}/avatars/key_upload`
+      const gateway_url = "https://84w6wezal0.execute-api.ca-central-1.amazonaws.com/avatars/key_upload"
       await getAccessToken()
       const access_token = localStorage.getItem("access_token")
-      const json = {
-        extension: extension
-      }
       const res = await fetch(gateway_url, {
         method: "POST",
-        body: JSON.stringify(json),
         headers: {
-          'Origin': process.env.REACT_APP_FRONTEND_URL,
+          // 'Origin': process.env.REACT_APP_FRONTEND_URL,
+          'Origin': "https://3000-behlkush-awsbootcampcru-2d5l7960m4f.ws-us98.gitpod.io",
           'Authorization': `Bearer ${access_token}`,
           'Accept': 'application/json',
           'Content-Type': 'application/json'
@@ -34,7 +33,7 @@ export default function ProfileForm(props) {
       let data = await res.json();
       if (res.status === 200) {
         console.log('presigned-url:', data)
-        return data.url
+        // return data.url
       } else {
         console.log('generate presigned url failed')
         console.log(res)
@@ -50,21 +49,25 @@ export default function ProfileForm(props) {
     const size = file.size
     const type = file.type
     const preview_image_url = URL.createObjectURL(file)
+    const presignedurl = "https://cruddur-uploaded-avatars-owensound.s3.ca-central-1.amazonaws.com/mock.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAU7LD6UIQCOQQ2BSK%2F20230607%2Fca-central-1%2Fs3%2Faws4_request&X-Amz-Date=20230607T180745Z&X-Amz-Expires=30000&X-Amz-SignedHeaders=host&X-Amz-Signature=98d1231e1f8e86b45510de9e3da3ec416ecb646f3bca581e0e7d01f538dd8480"
     console.log(filename, size, type)
-    const fileparts = filename.split('.')
-    const extension = fileparts[fileparts.length - 1]
-    const presignedurl = await s3uploadkey(extension)
+    // const formData = new FormData()
+    // formData.append('file', file)
+    // const fileparts = filename.split('.')
+    // const extension = fileparts[fileparts.length - 1]
+    // const presignedurl = await s3uploadkey(extension)
     try {
       console.log('s3upload')
       const res = await fetch(presignedurl, {
-        method: "PUT",
+        method: "POST",
         body: file,
         headers: {
-          'Content-Type': type
+          'Content-Type': file.type
         }
       })
+      let data = await res.json()
       if (res.status === 200) {
-
+        console.log('presigned-url:', data)
       } else {
         console.log(res)
       }
@@ -133,7 +136,11 @@ export default function ProfileForm(props) {
           </div>
           <div className="popup_content">
 
-            <input type="file" name="avatarupload" onChange={s3upload} />
+            <div className="upload" onClick={s3uploadkey}>
+              Avatar upload key
+            </div>
+            <input type="file" name="avatarupload" onChange={s3upload} /> 
+            
 
             <div className="field display_name">
               <label>Display Name</label>

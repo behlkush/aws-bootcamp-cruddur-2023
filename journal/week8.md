@@ -943,7 +943,7 @@ const s3upload = async (event) => {
 
 # Video 77: Week 8 - Fix CORS for API Gateway
 
-- First part of the video deals in fixing the gitpod issues which is not relevant in my case as I am running local.
+- First part of the video deals in fixing the gitpod issues. i updated the gitpod yml accordingly
 - Updated profile form.js with what Andrew Suggested, we still have CORS issue. Moving on to the next video
 
 # End of video 77: Week 8 - Fix CORS for API Gateway
