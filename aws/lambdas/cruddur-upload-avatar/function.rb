@@ -11,13 +11,17 @@ def handler(event:, context:)
   url = obj.presigned_url(:put, expires_in: 300)
 
   body = {url: url}.to_json
-  { statusCode: 200, body: body }
+  { 
+    headers: {
+      "Access-Control-Allow-Headers": "*, Authorization",
+      "Access-Control-Allow-Origin": "http://localhost:3000",
+      "Access-Control-Allow-Methods": "OPTIONS,GET,POST"
+    },
+    statusCode: 200, 
+    body: body 
+  }
 end
 
-puts handler(
-  event: {},
-  context: {}
-)
 # require 'json'
 # require 'jwt'
 

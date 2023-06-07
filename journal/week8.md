@@ -444,10 +444,12 @@ const assetsBucket = this.importBucket(assetsBucketName);
 - Got a new replacement and setting everything up from scratch as I work local
 - Docker build was taking forever for frontend
   - Researched and reasearched and researched some more to finally find that running below command can help:
+
 ```sh
 docker system prune
 ```
-  - And that did help in doing docker-compose up and building the frontend.
+
+- And that did help in doing docker-compose up and building the frontend.
 
 # Backend and frontend throwing errors
 
@@ -914,25 +916,41 @@ npm install aws-jwt-verify --save
 ## Upload the lambda for jwt verification as a zip and create a new lambda in AWS
 
 ## Next create API gateway and attach the lambda function to get presigned url
+
 - Also attach the custom lambda authorizer function
-- Tried calling the Gateway: https://84w6wezal0.execute-api.ca-central-1.amazonaws.com/avatars/key_upload which returns 
+- Tried calling the Gateway: https://84w6wezal0.execute-api.ca-central-1.amazonaws.com/avatars/key_upload which returns
+
 ```json
-{"message":"Unauthorized"}
+{ "message": "Unauthorized" }
 ```
+
 - Above result is expected
 
 # Add avatar upload integration to frontend
-- Modify ProfileForm.js to create popup function for avatar upload 
+
+- Modify ProfileForm.js to create popup function for avatar upload
+
 ```js
 const s3upload = async (event) => {
 ```
 
 - API gateway CORS permissions needs to be set to allow this functionality
-![API Gateway - CORS settings](assets/week8/cors_settings_api_gateway.png)
+  ![API Gateway - CORS settings](assets/week8/cors_settings_api_gateway.png)
 
-## CORS Issue still exists but checking in the code till now 
+## CORS Issue still exists but checking in the code till now
 
 # End of video 76
+
+# Video 77: Week 8 - Fix CORS for API Gateway
+
+- First part of the video deals in fixing the gitpod issues which is not relevant in my case as I am running local.
+- Updated profile form.js with what Andrew Suggested, we still have CORS issue. Moving on to the next video
+
+# End of video 77: Week 8 - Fix CORS for API Gateway
+
+# Video 78: Week 8 - Week 8 - Fix CORS Final AWS Lambda Layers
+# End of video 78 - Week 8 - Fix CORS Final AWS Lambda Layers
+
 
 Summary of Week 8:
 
