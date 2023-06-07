@@ -949,8 +949,30 @@ const s3upload = async (event) => {
 # End of video 77: Week 8 - Fix CORS for API Gateway
 
 # Video 78: Week 8 - Week 8 - Fix CORS Final AWS Lambda Layers
+
+- Wasnt able to fix
+
 # End of video 78 - Week 8 - Fix CORS Final AWS Lambda Layers
 
+# Video 79
+
+- Created a new CORS policy
+
+```json
+[
+  {
+    "AllowedHeaders": ["*"],
+    "AllowedMethods": ["PUT"],
+    "AllowedOrigins": ["https://*.gitpod.io"],
+    "ExposeHeaders": [
+      "x-amz-server-side-encryption",
+      "x-amz-request-id",
+      "x-amz-id-2"
+    ],
+    "MaxAgeSeconds": 3000
+  }
+]
+```
 
 Summary of Week 8:
 
