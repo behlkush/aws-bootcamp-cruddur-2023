@@ -17,14 +17,13 @@ export default function ProfileForm(props) {
     console.log('app frontend url', process.env.REACT_APP_FRONTEND_URL)
     try {
       // const gateway_url = `${process.env.REACT_APP_API_GATEWAY_ENDPOINT_URL}/avatars/key_upload`
-      const gateway_url = "https://84w6wezal0.execute-api.ca-central-1.amazonaws.com/avatars/key_upload"
+      const gateway_url = "https://bnkslll1d7.execute-api.ca-central-1.amazonaws.com/avatars/key_upload"
       await getAccessToken()
       const access_token = localStorage.getItem("access_token")
       const res = await fetch(gateway_url, {
         method: "POST",
         headers: {
-          // 'Origin': process.env.REACT_APP_FRONTEND_URL,
-          'Origin': "https://3000-behlkush-awsbootcampcru-2d5l7960m4f.ws-us98.gitpod.io",
+          'Origin': process.env.REACT_APP_FRONTEND_URL,
           'Authorization': `Bearer ${access_token}`,
           'Accept': 'application/json',
           'Content-Type': 'application/json'
