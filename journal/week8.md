@@ -974,6 +974,16 @@ const s3upload = async (event) => {
 ]
 ```
 
+#API Gateway routes
+![API Gateway - POST Route](assets/week8/api_gateway_route_post.png)
+
+![API Gateway - OPTIONS Route](assets/week8/api_gateway_route_options.png)
+
+#Lambda Logs -- Authorizer and CruddurUpload
+![JWT Authorizer logs](assets/week8/jwtauthorizer.png)
+
+![Cruddur Upload Lambda Logs](assets/week8/lambdaCruddurUpload.png)
+
 Summary of Week 8:
 
 - Andrew mentions - bonus points if you can figure out how to set env vars correctly.
