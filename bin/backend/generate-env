@@ -3,7 +3,7 @@
 require 'erb'
 
 # puts ENV["CONNECTION_URL"]
-template = File.read '/workspace/aws-bootcamp-cruddur-2023/bin/erb/backend-flask.env.erb'
+template = File.read '/workspaces/aws-bootcamp-cruddur-2023/bin/erb/backend-flask.env.erb'
 content = ERB.new(template).result(binding)
-filename = "/workspace/aws-bootcamp-cruddur-2023/backend-flask.env"
+filename = "/workspaces/aws-bootcamp-cruddur-2023/backend-flask.env"
 File.write(filename, content)

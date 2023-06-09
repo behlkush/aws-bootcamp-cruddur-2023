@@ -1053,3 +1053,42 @@ Summary of Week 8:
   and option: postAttachCommand - I load all my variables and do all npm installs here in postAttachCommand and the env vars get set automatically and correctly.
 
 "postAttachCommand": "sudo npm install aws-cdk -g && cd ./thumbing-serverless-cdk && npm i && cd .. && sh ./bin/rds/update-sg-rule && ./bin/ecr/login-ecr && ./bin/backend/generate-env && ./bin/frontend/generate-env && cd ./frontend-react-js && npm install && cd ../backend-flask && pip install -r requirements.txt && sh bin/ecs/install-sm"
+
+# Extra Tips
+
+- To run the code localy I have to make below changes:
+  **backend-flask.env**
+
+```sh
+FRONTEND_URL=https://3000-<%= ENV['GITPOD_WORKSPACE_ID'] %>.<%= ENV['GITPOD_WORKSPACE_CLUSTER_HOST'] %>
+BACKEND_URL=https://4567-<%= ENV['GITPOD_WORKSPACE_ID'] %>.<%= ENV['GITPOD_WORKSPACE_CLUSTER_HOST'] %>
+AWS_XRAY_URL=*4567-<%= ENV['GITPOD_WORKSPACE_ID'] %>.<%= ENV['GITPOD_WORKSPACE_CLUSTER_HOST'] %>*
+```
+
+Update to:
+
+```sh
+FRONTEND_URL=http://localhost:3000
+BACKEND_URL=http://localhost:4567
+AWS_XRAY_URL=*localhost:4567*
+```
+
+**frontend-react-js.env**
+
+```sh
+REACT_APP_BACKEND_URL=https://4567-<%= ENV['GITPOD_WORKSPACE_ID'] %>.<%= ENV['GITPOD_WORKSPACE_CLUSTER_HOST'] %>
+REACT_APP_FRONTEND_URL=https://3000-<%= ENV['GITPOD_WORKSPACE_ID'] %>.<%= ENV['GITPOD_WORKSPACE_CLUSTER_HOST'] %>
+```
+
+To
+
+```sh
+REACT_APP_BACKEND_URL=http://localhost:4567
+REACT_APP_FRONTEND_URL=http://localhost:3000
+```
+
+**docker-compose.yml**
+docker-compose_dev_containers.yml --> rename to --> docker-compose.yml
+docker-compose.yml --> docker-compose.yml-gitpod_backup
+
+# Do the opposite to run the code on gitpod
