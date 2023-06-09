@@ -1,5 +1,6 @@
 import './ProfileHeading.css';
 import EditProfileButton from '../components/EditProfileButton';
+import ProfileAvatar from './ProfileAvatar';
 
 export default function ProfileHeading(props) {
   const backgroundImage = 'url("https://assets.gsdcanadacorp.info/banners/banner.jpeg")';
@@ -13,9 +14,10 @@ export default function ProfileHeading(props) {
       <div className='title'>{props.profile.display_name}</div>
       <div className="cruds_count">{props.profile.cruds_count} Cruds</div>
       <div className="banner" style={styles} >
-        <div className="avatar">
+        <ProfileAvatar id={props.profile.cognito_user_uuid} />
+        {/* <div className="avatar">
           <img src="https://assets.gsdcanadacorp.info/avatars/cyber_defender_cruddur.jpeg"></img>
-        </div>
+        </div> */}
       </div>
       <div className="info">
         <div className='id'>

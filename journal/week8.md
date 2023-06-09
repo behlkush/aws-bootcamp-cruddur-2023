@@ -1097,6 +1097,31 @@ def handler(event:, context:)
 end # def handler
 ```
 
+# End of Video 78
+
+# Video: 79 - Week 8 - Render Avatar from CloudFront
+
+- Time to put what we have achieved in Video 78 to action. The Avatar is now loaded with a dynamic name based on the coginito user uuid to our S3 bucket avatars folder.
+- Now we need to serve it on the cruddur profile page.
+
+- So updated ProfileHeading.css, Profileinfo.js, ProfileHeading.js files
+- Added new file ProfileAvatar.js
+
+```js
+import "./ProfileAvatar.css";
+
+export default function ProfileAvatar(props) {
+  const backgroundImage = `url("https://assets.gsdcanacorp.info/avatars/${props.id}.jpeg")`;
+  const styles = {
+    backgroundImage: backgroundImage,
+    backgroundSize: "cover",
+    backgroundPosition: "center",
+  };
+
+  return <div className="profile-avatar" style={styles}></div>;
+}
+```
+
 Summary of Week 8:
 
 - Andrew mentions - bonus points if you can figure out how to set env vars correctly.
