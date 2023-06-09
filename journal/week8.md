@@ -954,7 +954,7 @@ const s3upload = async (event) => {
 
 # End of video 78 - Week 8 - Fix CORS Final AWS Lambda Layers
 
-# Video 79
+# Video 79 - Week 8 - Fix CORS Final AWS Lambda Layers
 
 - Created a new CORS policy
 
@@ -1045,6 +1045,57 @@ aws lambda publish-layer-version \
 - Also updated Lambda gem file to include jwt
 
 ![Lambda Layer](assets/week8/lambda_layer.png)
+
+# Finally update the Upload avatar lambda
+
+```rb
+require 'aws-sdk-s3'
+require 'json'
+require 'jwt'
+
+def handler(event:, context:)
+  puts event
+  # Return CORS headers for pre-flight check
+  if event['routeKey'] == "OPTIONS /{proxy+}"
+    puts({step: 'preflight', message: 'preflight CORS check'}.to_json)
+    {
+      headers: {
+        "Access-Control-Allow-Headers": "*, Authorization",
+        "Access-Control-Allow-Origin": "https://3000-behlkush-awsbootcampcru-h9741ejr149.ws-us99.gitpod.io",
+        "Access-Control-Allow-Methods": "OPTIONS,GET,POST"
+      },
+      statusCode: 200
+    }
+  else
+    token = event['headers']['authorization'].split(' ')[1]
+    puts({step: 'presignedurl', access_token: token}.to_json)
+
+    body_hash = JSON.parse(event["body"])
+    extension = body_hash["extension"]
+
+    decoded_token = JWT.decode token, nil, false
+    cognito_user_uuid = decoded_token[0]['sub']
+
+    s3 = Aws::S3::Resource.new
+    bucket_name = ENV["UPLOADS_BUCKET_NAME"]
+    object_key = "#{cognito_user_uuid}.#{extension}"
+
+    obj = s3.bucket(bucket_name).object(object_key)
+    url = obj.presigned_url(:put, expires_in: 30000)
+
+    body = {url: url}.to_json
+    {
+      headers: {
+          "Access-Control-Allow-Headers": "*, Authorization",
+          "Access-Control-Allow-Origin": "https://3000-behlkush-awsbootcampcru-h9741ejr149.ws-us99.gitpod.io",
+          "Access-Control-Allow-Methods": "OPTIONS, GET, POST"
+      },
+      statusCode: 200,
+      body: body
+    }
+  end # if
+end # def handler
+```
 
 Summary of Week 8:
 
