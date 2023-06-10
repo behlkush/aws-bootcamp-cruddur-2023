@@ -4,7 +4,6 @@ import React from "react";
 import ProfileAvatar from './ProfileAvatar';
 // [TODO] Authenication --- Importing amplify to use cognito
 import { Auth } from 'aws-amplify';
-import ProfileAvatar from './ProfileAvatar';
 
 export default function ProfileInfo(props) {
   const [popped, setPopped] = React.useState(false);
