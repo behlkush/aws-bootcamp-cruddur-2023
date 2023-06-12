@@ -37,7 +37,6 @@ export default function ProfileInfo(props) {
       </div>
       <div className="profile-info" onClick={click_pop}>
         <ProfileAvatar id={props.user.cognito_user_uuid} />
-        {/* <div className="profile-avatar"></div> */}
         <div className="profile-desc">
           <div className="profile-display-name">{props.user.display_name || "My Name" }</div>
           <div className="profile-username">@{props.user.handle || "handle"}</div>

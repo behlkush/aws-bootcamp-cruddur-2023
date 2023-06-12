@@ -1122,6 +1122,9 @@ export default function ProfileAvatar(props) {
 }
 ```
 
+#### Issue - the css profileheading.css had stanza name incorrect. fixed and the avatar started loading from avatar s3 bucket
+
+
 Summary of Week 8:
 
 - Andrew mentions - bonus points if you can figure out how to set env vars correctly.
@@ -1129,6 +1132,10 @@ Summary of Week 8:
   and option: postAttachCommand - I load all my variables and do all npm installs here in postAttachCommand and the env vars get set automatically and correctly.
 
 "postAttachCommand": "sudo npm install aws-cdk -g && cd ./thumbing-serverless-cdk && npm i && cd .. && sh ./bin/rds/update-sg-rule && ./bin/ecr/login-ecr && ./bin/backend/generate-env && ./bin/frontend/generate-env && cd ./frontend-react-js && npm install && cd ../backend-flask && pip install -r requirements.txt && sh bin/ecs/install-sm"
+
+- Profile Avatar Upload lambda was successfully configured after multiple failed attempts. I faced CORS issues that took days to resolve. Finally i figured out that the issue was that my lambda was first created in a different region and then when i ported it to a the canada region, not all settings were ported. I was not able to see cloud watch logs. finally i did the whole thing again, created new Lambda, New authorizer and new API gateway and integrated them and it succeeded. Huge learning.
+
+- The last view of week 8 was really stress buster after everything seems to be in place and avatars are now loading fine.
 
 # Extra Tips
 
