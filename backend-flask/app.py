@@ -136,7 +136,7 @@ def rollbar_test():
 # Implementing healthcheck for backend flask app
 @app.route('/api/health-check')
 def health_check():
-  return {'success': True}, 200
+  return {'success': True, 'kb_flag': 'rock the world'}, 200
 
 @app.route("/api/message_groups", methods=['GET'])
 def data_message_groups():
