@@ -49,3 +49,41 @@ artifacts:
 - Above contents are the fixed version of buildspec.yml file.
 - As pointed out, env vars like AWS KEY and COGNITO ID etc. are not required to build the code
 - Also the docker version needed to be 20 and not 19.
+- There was one issue that came - The CodeBuild didn't have access to ECR and was failing so i had to edit the service role of CodeBuild to include permissions to update ECR
+
+```json
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "VisualEditor0",
+      "Effect": "Allow",
+      "Action": [
+        "ecr:BatchCheckLayerAvailability",
+        "ecr:CompleteLayerUpload",
+        "ecr:GetAuthorizationToken",
+        "ecr:InitiateLayerUpload",
+        "ecr:PutImage",
+        "ecr:UploadLayerPart",
+        "ecr:BatchGetImage",
+        "ecr:GetDownloadUrlForLayer"
+      ],
+      "Resource": "*"
+    }
+  ]
+}
+```
+
+- With the correct buildspec.yml the CodeBuild succeeded
+
+# Video 83: Week 9 - CodePipeline
+
+- Added a build stage in Code Pipeline
+
+- Fixed CodeBuild to output artifact named ImageDefinition
+- Updated Deploy Stage of pipeline to use the above ImageDefinition artifact.
+- Updated buildspec.yml to cd into the project root
+
+```sh
+- cd $CODEBUILD_SRC_DIR
+```
