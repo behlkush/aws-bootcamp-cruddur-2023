@@ -94,3 +94,10 @@ artifacts:
 ![CI/CD Working](assets/week9/cicd_success.png)
 
 # This is probably the easiest week ever.
+
+# Tagged My work
+
+```sh
+git tag week9 origin
+git push --tags
+```
