@@ -87,3 +87,10 @@ artifacts:
 ```sh
 - cd $CODEBUILD_SRC_DIR
 ```
+
+- Next i made a code change in api- health-page (https://api.gsdcanadacorp.info/api/health-check) and that triggered the pipeline
+- Ran my api path for health check again and succeeded.
+
+![CI/CD Working](assets/week9/cicd_success.png)
+
+# This is probably the easiest week ever.
