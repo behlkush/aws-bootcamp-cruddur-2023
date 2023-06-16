@@ -101,3 +101,53 @@ artifacts:
 git tag week9 origin
 git push --tags
 ```
+
+# Homework
+
+## Trying to automate build for frontend
+
+```yaml
+# Buildspec runs in the build stage of your pipeline.
+version: 0.2
+phases:
+  install:
+    runtime-versions:
+      docker: 20
+    commands:
+      - echo "cd into $CODEBUILD_SRC_DIR/frontend-react-js"
+      - cd $CODEBUILD_SRC_DIR/frontend-react-js
+      - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $IMAGE_URL
+  build:
+    commands:
+      - echo Build started on `date`
+      - echo Building the Docker image...
+      - docker build \
+        --build-arg REACT_APP_BACKEND_URL="https://api.gsdcanadacorp.info" \
+        --build-arg REACT_APP_AWS_PROJECT_REGION="$AWS_DEFAULT_REGION" \
+        --build-arg REACT_APP_AWS_COGNITO_REGION="$AWS_DEFAULT_REGION" \
+        --build-arg REACT_APP_AWS_USER_POOLS_ID="ca-central-1_Sn1lgzw8T" \
+        --build-arg REACT_APP_CLIENT_ID="34fjuf4h7vmu9fc2s5niu5uo11" \
+        -t frontend-react-js \
+        -f "$FRONTEND_REACT_JS_PATH/Dockerfile.prod" \
+        .
+      - "docker tag $REPO_NAME $IMAGE_URL/$REPO_NAME"
+  post_build:
+    commands:
+      - echo Build completed on `date`
+      - echo Pushing the Docker image..
+      - docker push $IMAGE_URL/$REPO_NAME
+      - cd $CODEBUILD_SRC_DIR
+      - echo "imagedefinitions.json > [{\"name\":\"$CONTAINER_NAME\",\"imageUri\":\"$IMAGE_URL/$REPO_NAME\"}]" > imagedefinitions.json
+      - printf "[{\"name\":\"$CONTAINER_NAME\",\"imageUri\":\"$IMAGE_URL/$REPO_NAME\"}]" > imagedefinitions.json
+
+env:
+  variables:
+    AWS_ACCOUNT_ID: 342196396576
+    AWS_DEFAULT_REGION: ca-central-1
+    CONTAINER_NAME: frontend-react-js
+    IMAGE_URL: 342196396576.dkr.ecr.ca-central-1.amazonaws.com
+    REPO_NAME: frontend-react-js:latest
+artifacts:
+  files:
+    - imagedefinitions.json
+```
