@@ -4,7 +4,7 @@ import ProfileAvatar from './ProfileAvatar';
 
 export default function ProfileHeading(props) {
   const backgroundImage = 'url("https://assets.gsdcanadacorp.info/banners/banner.jpeg")';
-  console.log('kb is here', props.profile.cognito_user_uuid)
+  console.log('kb is here2', props.profile.cognito_user_uuid)
   const styles = {
     backgroundImage: backgroundImage,
     backgroundSize: 'cover',
