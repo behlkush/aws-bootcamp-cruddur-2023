@@ -1,0 +1,9 @@
+#! /bin/bash
+set -e # Stop the execution if anything fails
+
+CFN_PATH="/Users/kush.behl/Library/CloudStorage/OneDrive-ThomsonReutersIncorporated/Study_2023/bootcamp_aws_andrew_brown/aws-bootcamp-cruddur-2023/aws/cfn/template.yaml"
+aws cloudformation deploy \
+  --stack-name "my-cluster" \
+  --template-file $CFN_PATH \
+  --no-execute-changeset \
+  --capabilities CAPABILITY_NAMED_IAM
