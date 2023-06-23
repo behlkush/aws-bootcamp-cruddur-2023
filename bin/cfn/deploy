@@ -2,8 +2,12 @@
 set -e # Stop the execution if anything fails
 
 CFN_PATH="/Users/kush.behl/Library/CloudStorage/OneDrive-ThomsonReutersIncorporated/Study_2023/bootcamp_aws_andrew_brown/aws-bootcamp-cruddur-2023/aws/cfn/template.yaml"
+
+cfn-lint $CFN_PATH
+
 aws cloudformation deploy \
   --stack-name "my-cluster" \
+  --s3-bucket "cfn-artifacts-owensound" \
   --template-file $CFN_PATH \
   --no-execute-changeset \
   --capabilities CAPABILITY_NAMED_IAM
